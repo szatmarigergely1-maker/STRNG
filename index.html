@@ -10,18 +10,18 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
-    body { font-family: 'Montserrat', sans-serif; background-color: #000; color: #fff; -webkit-tap-highlight-color: transparent; padding-bottom: 90px; }
+    body { font-family: 'Montserrat', sans-serif; background-color: #000; color: #fff; -webkit-tap-highlight-color: transparent; padding-bottom: 95px; }
     ::-webkit-scrollbar { display: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; }
-    .tab-content.active { display: block; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.2s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
   </style>
 </head>
-<body class="antialiased min-h-screen flex flex-col">
+<body class="antialiased min-h-screen flex flex-col bg-black">
 
-  <!-- TOP HEADER -->
+  <!-- FEJLÉC -->
   <header class="p-4 border-b border-zinc-900 bg-zinc-950/90 sticky top-0 backdrop-blur z-20 flex justify-between items-center">
     <div class="flex items-center gap-2">
       <span class="text-xl font-black tracking-tighter">STRNG</span>
@@ -32,28 +32,27 @@
     </div>
   </header>
 
-  <!-- TAB 1: PROGRAM & HORIZONTÁLIS NAPTÁR -->
-  <div id="tab-program" class="tab-content active flex-grow flex flex-col">
-    <!-- VÍZSZINTES NAPTÁR -->
+  <!-- TAB 1: PROGRAM ÉS VÍZSZINTES NAPTÁR -->
+  <div id="tab-program" class="tab-content active flex-grow">
+    <!-- VÍZSZINTESEN GÖRGETHETŐ NAPTÁR -->
     <div class="bg-zinc-950 border-b border-zinc-900 sticky top-[57px] z-10 py-2.5 px-3">
       <div id="calendar-bar" class="flex gap-2 overflow-x-auto no-scrollbar py-1"></div>
     </div>
 
-    <!-- NAPI EGYETLEN AKTÍV EDZÉSNÉZET -->
-    <main class="flex-grow p-4 max-w-lg mx-auto w-full space-y-5">
+    <!-- AZ ADOTT NAP RÉSZLETEI -->
+    <main class="p-4 max-w-lg mx-auto w-full space-y-4">
       <div id="day-header" class="flex justify-between items-center border-b border-zinc-900 pb-2"></div>
       <div id="day-content" class="space-y-4"></div>
     </main>
   </div>
 
-  <!-- TAB 2: KALKULÁTOROK (TM ÉS FUTÁS) -->
-  <main id="tab-calc" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-6">
+  <!-- TAB 2: SÚLYOK ÉS FUTÓIDŐK BEÁLLÍTÁSA -->
+  <main id="tab-calc" class="tab-content p-4 max-w-lg mx-auto w-full space-y-5">
     <div class="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl space-y-4 shadow-xl">
       <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
         <h2 class="text-sm font-bold uppercase tracking-wider text-emerald-400">5/3/1 Training Max (TM)</h2>
         <span class="bg-emerald-950/60 text-emerald-400 border border-emerald-900/50 px-2.5 py-1 rounded-lg text-xs font-black tracking-wider" id="calc-cycle-lbl">1. Ciklus</span>
       </div>
-      <p class="text-xs text-zinc-400 leading-relaxed">A munkasúlyok ezekből az adatokból számolódnak az erősítő napokra:</p>
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">Guggolás (Squat)</label>
@@ -84,7 +83,6 @@
 
     <div class="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl space-y-4 shadow-xl">
       <h2 class="text-sm font-bold uppercase tracking-wider text-sky-400">Futás Időeredmények</h2>
-      <p class="text-xs text-zinc-400 leading-relaxed">Add meg a felmérőidőidet, és a futóprogram automatikusan kiszámolja a zónatempókat:</p>
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">2K Idő (MM:SS)</label>
@@ -103,7 +101,7 @@
   </main>
 
   <!-- TAB 3: EDZÉSNAPLÓ -->
-  <main id="tab-log" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-5">
+  <main id="tab-log" class="tab-content p-4 max-w-lg mx-auto w-full space-y-5">
     <div class="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl space-y-4 shadow-xl">
       <h2 class="text-sm font-bold uppercase tracking-wider text-zinc-400">Egyéni Edzés Naplózása</h2>
       <div class="grid grid-cols-2 gap-2">
@@ -115,7 +113,7 @@
           <option value="Egyéb">Egyéb</option>
         </select>
       </div>
-      <input type="text" id="custom-log-title" placeholder="Edzés / Feladat megnevezése" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white p-3 rounded-xl">
+      <input type="text" id="custom-log-title" placeholder="Edzés / Feladat neve" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white p-3 rounded-xl">
       <textarea id="custom-log-details" rows="2" placeholder="Részletek, súlyok, idők..." class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white p-3 rounded-xl resize-none"></textarea>
       <button onclick="saveCustomLog()" class="w-full bg-white text-black font-black text-xs py-3 rounded-xl uppercase tracking-wider">
         Mentés a Naplóba
@@ -123,33 +121,6 @@
     </div>
 
     <div class="space-y-3">
-      <h3 class="text-xs font-black uppercase tracking-wider text-zinc-500 px-1">Rögzített Edzések & AMRAP Eredmények</h3>
+      <h3 class="text-xs font-black uppercase tracking-wider text-zinc-500 px-1">Rögzített Eredmények</h3>
       <div id="logs-container" class="space-y-2.5"></div>
     </div>
-  </main>
-
-  <!-- TAB 4: MENTÉS -->
-  <main id="tab-backup" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-6">
-    <div class="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl space-y-4 text-center">
-      <i class="fa-solid fa-cloud-arrow-down text-3xl text-zinc-600 mb-1"></i>
-      <h2 class="text-sm font-bold uppercase tracking-wider text-white">Biztonsági Mentés</h2>
-      <p class="text-xs text-zinc-400 leading-relaxed">Az adataidat a telefonod böngészője tárolja. Érdemes rendszeresen letölteni a mentési fájlt:</p>
-      <div class="flex flex-col gap-3 pt-3">
-        <button onclick="exportData()" class="w-full bg-zinc-900 border border-zinc-800 text-white font-bold text-xs py-3.5 rounded-xl uppercase tracking-wider flex justify-center items-center gap-2">
-          <i class="fa-solid fa-download"></i> Mentés Letöltése (.json)
-        </button>
-        <label class="w-full bg-zinc-900 border border-zinc-800 text-white font-bold text-xs py-3.5 rounded-xl uppercase tracking-wider flex justify-center items-center gap-2 cursor-pointer">
-          <i class="fa-solid fa-upload"></i> Mentés Visszatöltése
-          <input type="file" class="hidden" accept=".json" onchange="importData(event)">
-        </label>
-      </div>
-    </div>
-  </main>
-
-  <!-- TIPPEK ÉS STRATÉGIA MODAL -->
-  <div id="tips-modal" class="fixed inset-0 bg-black/90 hidden justify-center items-end sm:items-center p-0 sm:p-4 z-50 backdrop-blur-sm">
-    <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-t-3xl sm:rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto space-y-4 shadow-2xl">
-      <div class="flex justify-between items-start border-b border-zinc-900 pb-3">
-        <div>
-          <span class="text-[10px] font-black uppercase text-amber-500 tracking-wider block" id="modal-subtitle">Tippek & Stratégia</span>
-          <h3 class="text-lg font-black text-white
