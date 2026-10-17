@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['IDE_AZ_ADMIN_EMAILED@gmail.com'];
+    }
+
+    // Órarend és WOD: mindenki olvashatja, csak az admin írhatja
+    match /pub/classes {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Vendégek, foglalások: a vendégek is írják (foglalás, regisztráció)
+    match /pub/members {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['users', 'bookings', 'activity'])
+        && request.resource.data.users is list
+        && request.resource.data.bookings is list
+        && request.resource.data.users.size() < 2000
+        && request.resource.data.bookings.size() < 5000;
+      allow delete: if isAdmin();
+    }
+
+    // Pénzügy: csak az admin látja és írja
+    match /admin/ledger {
+      allow read, write: if isAdmin();
+    }
+  }
+}
