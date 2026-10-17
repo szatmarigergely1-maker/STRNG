@@ -147,8 +147,24 @@ const defaultState=()=>({
  runTimes:{'2k':'','5k':''}, logs:[], completedDays:{}
 });
 function localDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
-function loadState(){try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const s=JSON.parse(raw);const base=defaultState();return {...base,...s,tm:{...base.tm,...s.tm},runTimes:{...base.runTimes,...s.runTimes},logs:Array.isArray(s.logs)?s.logs:[],completedDays:s.completedDays||{}}}}catch(e){console.warn('Nem sikerült betölteni a mentést',e)}return defaultState()}
-let state=loadState(), editingId=null, toastTimer=null;
+function loadState(){
+ try{
+  const raw=localStorage.getItem(STORAGE_KEY);
+  if(!raw)return defaultState();
+  const saved=JSON.parse(raw),base=defaultState();
+  if(!saved||typeof saved!=='object'||Array.isArray(saved))return base;
+  const tm={...base.tm};
+  for(const l of lifts){const n=Number(saved.tm?.[l.key]);if(Number.isFinite(n)&&n>0)tm[l.key]=Math.round(n/2.5)*2.5;}
+  const runTimes={'2k':'','5k':''};
+  for(const key of ['2k','5k']){const value=String(saved.runTimes?.[key]??'').trim();if(value&&Number.isFinite(parseTime(value)))runTimes[key]=value;}
+  const logs=Array.isArray(saved.logs)?saved.logs.filter(x=>x&&typeof x==='object'&&typeof x.id==='string'&&typeof x.date==='string'&&typeof x.title==='string').map(x=>({...x,createdAt:Number.isFinite(Number(x.createdAt))?Number(x.createdAt):0})):[];
+  const completedDays=saved.completedDays&&typeof saved.completedDays==='object'&&!Array.isArray(saved.completedDays)?saved.completedDays:{};
+  const cycle=Number.isInteger(Number(saved.cycle))&&Number(saved.cycle)>0?Number(saved.cycle):1;
+  const selectedDate=/^\d{4}-\d{2}-\d{2}$/.test(String(saved.selectedDate||''))?String(saved.selectedDate):base.selectedDate;
+  return {...base,cycle,selectedDate,tm,runTimes,logs,completedDays};
+ }catch(e){console.warn('Nem sikerült betölteni a mentést; alapértékek használata.',e);return defaultState()}
+}
+let state=loadState(), editingId=null, toastTimer=null, runTimesDirty=false;
 const bootDate=localDate(new Date());
 state.selectedDate=bootDate<PROGRAM_START?PROGRAM_START:bootDate;
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){notify('A böngésző nem engedte a mentést.');console.error(e)}}
@@ -173,18 +189,21 @@ const runningWorkouts=[
 ];
 
 function getRunProfile(times=state.runTimes){
+ // If the user has edited either field but has not saved both, never show stale paces.
+ if(runTimesDirty) return {ready:false,dirty:true};
  const t2=parseTime(times['2k']), t5=parseTime(times['5k']);
  const ready=Number.isFinite(t2)&&Number.isFinite(t5)&&t2>0&&t5>0;
  if(!ready) return {ready:false};
  const pace2=t2/2, pace5=t5/5;
+ const inconsistent=pace2>=pace5;
  return {
-  ready:true, t2, t5, pace2, pace5,
+  ready:!inconsistent, t2, t5, pace2, pace5,
   easyFast:pace5+75, easySlow:pace5+120,
   recoveryFast:pace5+90, recoverySlow:pace5+135,
   tempoFast:pace5+10, tempoSlow:pace5+25,
   intervalFast:pace2+5, intervalSlow:pace2+15,
   progressionFast:pace5+20, progressionSlow:pace5+40,
-  inconsistent:pace2>=pace5
+  inconsistent
  };
 }
 function formatSplit(seconds){
@@ -405,7 +424,7 @@ function renderLogs(){
 }
 function renderCalc(){
  for(const l of lifts)$( 'tm-'+l.key).value=state.tm[l.key]??'';
- $('run-2k-input').value=state.runTimes['2k']||'';$('run-5k-input').value=state.runTimes['5k']||'';
+ if(!runTimesDirty){$('run-2k-input').value=state.runTimes['2k']||'';$('run-5k-input').value=state.runTimes['5k']||'';}
  renderPaces();
 }
 function parseTime(v){const s=String(v||'').trim();if(!s)return null;const m=s.match(/^(\d{1,3}):([0-5]\d)$/);if(!m)return NaN;return Number(m[1])*60+Number(m[2])}
@@ -416,7 +435,7 @@ function renderPaces(){
  if(!profile.ready){
   const has2=!!String(state.runTimes['2k']||'').trim();
   const has5=!!String(state.runTimes['5k']||'').trim();
-  root.innerHTML=`<div class="col-span-2 rounded-xl border border-amber-900 bg-amber-950/20 p-4"><div class="text-xs font-black uppercase tracking-wider text-amber-300">Futótempók zárolva</div><p class="text-xs text-zinc-300 leading-relaxed mt-2">A napi futóedzések nem mutatnak konkrét tempókat, amíg mindkét legjobb idő nincs elmentve.</p><div class="flex gap-2 mt-3"><span class="workout-tag ${has2?'text-emerald-300 border-emerald-900':''}">2 km: ${has2?'megadva':'hiányzik'}</span><span class="workout-tag ${has5?'text-emerald-300 border-emerald-900':''}">5 km: ${has5?'megadva':'hiányzik'}</span></div></div>`;
+  root.innerHTML=`<div class="col-span-2 rounded-xl border border-amber-900 bg-amber-950/20 p-4"><div class="text-xs font-black uppercase tracking-wider text-amber-300">Futótempók zárolva</div><p class="text-xs text-zinc-300 leading-relaxed mt-2">${profile.dirty?'Módosítottad az időket. Mentsd el a két ellenőrzött eredményt; addig a napi futóterv sem mutat konkrét céltempót.':profile.inconsistent?'A mentett idők egymásnak ellentmondanak: a 2 km-es átlagtempónak gyorsabbnak kell lennie az 5 km-esnél. Javítsd és mentsd újra őket.':'A napi futóedzések nem mutatnak konkrét tempókat, amíg mindkét legjobb idő nincs elmentve.'}</p><div class="flex gap-2 mt-3"><span class="workout-tag ${has2?'text-emerald-300 border-emerald-900':''}">2 km: ${has2?'megadva':'hiányzik'}</span><span class="workout-tag ${has5?'text-emerald-300 border-emerald-900':''}">5 km: ${has5?'megadva':'hiányzik'}</span></div></div>`;
   return;
  }
  root.innerHTML=`
@@ -441,6 +460,7 @@ function saveMaxes(){
  state.tm=vals;save();renderAll();notify('Training Max értékek elmentve.');
 }
 function advanceCycle(){
+ for(const l of lifts){const input=Number($('tm-'+l.key).value);if(!Number.isFinite(input)||input<=0){notify('Előbb adj meg mind a négy Training Max mezőben pozitív értéket.');return}if(Math.abs(input-Number(state.tm[l.key]))>0.001){notify('Előbb mentsd el a módosított Training Max értékeket, utána léptess ciklust.');return}}
  if(!confirm(`Lezárod a(z) ${state.cycle}. ciklust? A TM +5 kg-mal nő guggolásnál/felhúzásnál, és +2,5 kg-mal a nyomásoknál.`))return;
  for(const l of lifts)state.tm[l.key]=Math.round((Number(state.tm[l.key])+(l.upper?2.5:5))/2.5)*2.5;
  state.cycle++;save();renderAll();notify(`Elindult a ${state.cycle}. ciklus.`);
@@ -448,10 +468,11 @@ function advanceCycle(){
 function saveRunTimes(){
  const a=$('run-2k-input').value.trim(),b=$('run-5k-input').value.trim();
  const p=a?parseTime(a):null,q=b?parseTime(b):null;
- if(!a||!b){notify('Mindkét legjobb idő szükséges: 2 km ÉS 5 km.');renderPaces();return}
- if(Number.isNaN(p)||Number.isNaN(q)){notify('Az idő formátuma MM:SS legyen, pl. 08:30.');return}
- if(p<=0||q<=0){notify('Adj meg valós, pozitív futóidőt.');return}
- state.runTimes={'2k':a,'5k':b};save();renderAll();notify('Futótempók frissítve a napi tervben és a kalkulátorban.');
+ if(!a||!b){runTimesDirty=true;notify('Mindkét legjobb idő szükséges: 2 km ÉS 5 km.');renderPaces();renderDay();return}
+ if(Number.isNaN(p)||Number.isNaN(q)){runTimesDirty=true;notify('Az idő formátuma MM:SS legyen, pl. 08:30.');renderPaces();renderDay();return}
+ if(p<60||p>3600||q<120||q>7200){runTimesDirty=true;notify('Ellenőrizd az időket: 2 km-re 01:00–60:00, 5 km-re 02:00–120:00 közötti MM:SS érték adható meg.');renderPaces();renderDay();return}
+ if(p*2.5>=q){runTimesDirty=true;notify('Az időeredmények nem logikusak: a 2 km-es átlagtempónak gyorsabbnak kell lennie az 5 km-esnél. Ellenőrizd az adatokat.');renderPaces();renderDay();return}
+ state.runTimes={'2k':a,'5k':b};runTimesDirty=false;save();renderAll();notify('Futótempók frissítve a napi tervben és a kalkulátorban.');
 }
 function resetLogForm(){editingId=null;$('custom-log-date').value=state.selectedDate;$('custom-log-type').value='Súlyemelés';$('custom-log-title').value='';$('custom-log-details').value='';$('save-custom-log').textContent='Mentés a naplóba';$('edit-hint').classList.add('hidden')}
 function saveCustomLog(){
@@ -493,12 +514,9 @@ $('custom-log-date').value=state.selectedDate;
 document.addEventListener('input',e=>{
  if(e.target && (e.target.id==='run-2k-input'||e.target.id==='run-5k-input')){
   const a=$('run-2k-input').value.trim(), b=$('run-5k-input').value.trim();
-  if(a!==String(state.runTimes['2k']||'') || b!==String(state.runTimes['5k']||'')){
-   const root=$('paces-summary');
-   if(root && getRunProfile().ready){
-    root.insertAdjacentHTML('afterbegin','<div class="col-span-2 rounded-lg border border-amber-900 bg-amber-950/20 p-3 text-xs text-amber-200">A mezőket módosítottad. Mentsd el mindkét időt az új tempózónák frissítéséhez.</div>');
-   }
-  }
+  runTimesDirty=(a!==String(state.runTimes['2k']||'') || b!==String(state.runTimes['5k']||''));
+  renderPaces();
+  renderDay();
  }
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('workout-modal').classList.contains('hidden'))closeWorkoutDetails()});
