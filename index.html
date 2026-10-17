@@ -11,7 +11,6 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap');
     body { font-family: 'Montserrat', sans-serif; background-color: #000; color: #fff; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
-    /* Hide scrollbar for clean app look */
     ::-webkit-scrollbar { display: none; }
     .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; }
     .tab-content.active { display: block; }
@@ -62,52 +61,72 @@
 
   <!-- TAB 2: 5/3/1 KALKULÁTOR -->
   <main id="tab-531" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-6">
+    
     <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
-      <h2 class="text-sm font-bold uppercase tracking-wider text-emerald-500">1RM (Egyismétléses Maximumok)</h2>
-      <p class="text-xs text-zinc-400">Add meg a jelenlegi maximumaidat (kg). A rendszer a 90%-os Training Max (TM) alapján számolja a 4 hetes ciklust.</p>
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-emerald-500">Wendler 5/3/1</h2>
+        <span class="bg-emerald-950 text-emerald-400 border border-emerald-900 px-3 py-1 rounded-lg text-xs font-black tracking-widest" id="cycle-display">CIKLUS: 1</span>
+      </div>
+      
+      <p class="text-[11px] text-zinc-400">Jelenlegi <strong class="text-white">Training Max (TM)</strong> súlyok beállítása (1RM 90%-a):</p>
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">Guggolás (Squat)</label>
-          <input type="number" id="rm-sq" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
+          <input type="number" id="tm-sq" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
         </div>
         <div>
           <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">Fekvenyomás (Bench)</label>
-          <input type="number" id="rm-bp" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
+          <input type="number" id="tm-bp" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
         </div>
         <div>
           <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">Felhúzás (Deadlift)</label>
-          <input type="number" id="rm-dl" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
+          <input type="number" id="tm-dl" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
         </div>
         <div>
           <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">Mellből nyomás (OHP)</label>
-          <input type="number" id="rm-ohp" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
+          <input type="number" id="tm-ohp" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
         </div>
       </div>
-      <button onclick="calculate531()" class="w-full bg-emerald-600 text-white font-extrabold text-xs px-6 py-3 rounded-xl hover:bg-emerald-500 transition uppercase tracking-wide">
-        Ciklus Kiszámolása
-      </button>
-    </div>
-    <div id="table-531-container" class="space-y-4"></div>
-  </main>
-
-  <!-- TAB 3: FUTÁS KALKULÁTOR -->
-  <main id="tab-run" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-6">
-    <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
-      <h2 class="text-sm font-bold uppercase tracking-wider text-sky-400">Futás Tempókalkulátor</h2>
-      <p class="text-xs text-zinc-400">Add meg a legutóbbi, vagy megcélzott 5 km-es idődet (perc:másodperc).</p>
-      
-      <div class="flex gap-3 items-end">
-        <div class="flex-grow">
-          <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">5K Időeredmény (MM:SS)</label>
-          <input type="text" id="run-5k-input" placeholder="25:00" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm focus:outline-none focus:border-sky-500">
-        </div>
-        <button onclick="calculatePaces()" class="bg-sky-600 text-white font-extrabold text-xs px-6 py-3.5 rounded-xl hover:bg-sky-500 transition uppercase tracking-wide">
+      <div class="flex gap-2">
+        <button onclick="calculate531()" class="flex-grow bg-emerald-600 text-white font-extrabold text-xs px-4 py-3 rounded-xl hover:bg-emerald-500 transition uppercase tracking-wide">
           Számol
+        </button>
+        <button onclick="advanceCycle()" class="flex-grow bg-zinc-800 text-white font-extrabold text-[10px] px-4 py-3 rounded-xl hover:bg-zinc-700 transition uppercase tracking-wide border border-zinc-700 flex items-center justify-center gap-1" title="+2.5kg felső, +5kg alsó">
+          Következő Ciklus <i class="fa-solid fa-arrow-up-right-dots text-emerald-500"></i>
         </button>
       </div>
     </div>
-    <div id="run-results" class="hidden grid grid-cols-1 gap-3">
-      <!-- Generated Paces go here -->
+
+    <!-- 5/3/1 WEEKS CONTAINER -->
+    <div id="table-531-container" class="space-y-4"></div>
+  </main>
+
+  <!-- TAB 3: FUTÁS KALKULÁTOR ÉS TERV -->
+  <main id="tab-run" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-6">
+    <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
+      <h2 class="text-sm font-bold uppercase tracking-wider text-sky-400">Futás Tempókalkulátor</h2>
+      <p class="text-[11px] text-zinc-400">Add meg az időeredményeidet. A rendszer generál egy 4 hetes célzott edzéstervet az aktuális zónáidra.</p>
+      
+      <div class="grid grid-cols-2 gap-3 mb-2">
+        <div>
+          <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">2K Idő (MM:SS)</label>
+          <input type="text" id="run-2k-input" placeholder="08:30" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm focus:outline-none focus:border-sky-500 text-center font-mono">
+        </div>
+        <div>
+          <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">5K Idő (MM:SS)</label>
+          <input type="text" id="run-5k-input" placeholder="25:00" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm focus:outline-none focus:border-sky-500 text-center font-mono">
+        </div>
+      </div>
+      <button onclick="calculatePaces()" class="w-full bg-sky-600 text-white font-extrabold text-xs px-6 py-3.5 rounded-xl hover:bg-sky-500 transition uppercase tracking-wide">
+        Zónák & Edzésterv Generálása
+      </button>
+    </div>
+    
+    <div id="run-results-container" class="space-y-6 hidden">
+      <!-- Paces -->
+      <div id="run-paces" class="grid grid-cols-2 gap-2"></div>
+      <!-- Sample Plan -->
+      <div id="run-plan" class="space-y-3"></div>
     </div>
   </main>
 
@@ -118,254 +137,4 @@
       <h2 class="text-sm font-bold uppercase tracking-wider text-white">Biztonsági mentés</h2>
       <p class="text-xs text-zinc-400 leading-relaxed">Az adataidat a telefonod memóriája tárolja. Érdemes havonta letölteni egy biztonsági mentést a fájljaid közé.</p>
       <div class="flex flex-col gap-3 pt-4">
-        <button onclick="exportData()" class="w-full bg-zinc-800 border border-zinc-700 text-white font-bold text-xs px-6 py-3 rounded-xl transition uppercase tracking-wide flex justify-center items-center gap-2">
-          <i class="fa-solid fa-download"></i> Mentés letöltése (.json)
-        </button>
-        <label class="w-full bg-zinc-800 border border-zinc-700 text-white font-bold text-xs px-6 py-3 rounded-xl transition uppercase tracking-wide flex justify-center items-center gap-2 cursor-pointer">
-          <i class="fa-solid fa-upload"></i> Mentés Visszaállítása
-          <input type="file" class="hidden" accept=".json" onchange="importData(event)">
-        </label>
-      </div>
-    </div>
-  </main>
-
-  <!-- BOTTOM NAVIGATION BAR -->
-  <nav class="fixed bottom-0 left-0 w-full bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-800 pb-safe z-30">
-    <div class="flex justify-around items-center p-2 max-w-lg mx-auto">
-      <button onclick="switchTab('tab-log', 'Napló')" class="nav-btn active flex flex-col items-center p-2 text-zinc-500 hover:text-white transition w-16" data-target="tab-log">
-        <i class="fa-solid fa-book text-lg mb-1"></i>
-        <span class="text-[10px] font-bold uppercase">Napló</span>
-      </button>
-      <button onclick="switchTab('tab-531', '5/3/1')" class="nav-btn flex flex-col items-center p-2 text-zinc-500 hover:text-white transition w-16" data-target="tab-531">
-        <i class="fa-solid fa-dumbbell text-lg mb-1"></i>
-        <span class="text-[10px] font-bold uppercase">5/3/1</span>
-      </button>
-      <button onclick="switchTab('tab-run', 'Futás')" class="nav-btn flex flex-col items-center p-2 text-zinc-500 hover:text-white transition w-16" data-target="tab-run">
-        <i class="fa-solid fa-person-running text-lg mb-1"></i>
-        <span class="text-[10px] font-bold uppercase">Futás</span>
-      </button>
-      <button onclick="switchTab('tab-backup', 'Mentés')" class="nav-btn flex flex-col items-center p-2 text-zinc-500 hover:text-white transition w-16" data-target="tab-backup">
-        <i class="fa-solid fa-gear text-lg mb-1"></i>
-        <span class="text-[10px] font-bold uppercase">Mentés</span>
-      </button>
-    </div>
-  </nav>
-
-  <style>
-    /* Active Nav State */
-    .nav-btn.active { color: #fff; }
-    .nav-btn.active i { color: #f97316; /* Tailwind orange-500 */ }
-  </style>
-
-  <script>
-    // --- ADATBÁZIS KEZELÉS ---
-    let appData = JSON.parse(localStorage.getItem('strng_personal_data')) || {
-      logs: [],
-      maxes: { sq: '', bp: '', dl: '', ohp: '' },
-      run5k: ''
-    };
-
-    // Kezdő dátum beállítása
-    document.getElementById('log-date').valueAsDate = new Date();
-    
-    // Betöltjük a mentett adatokat a kalkulátorokba
-    document.getElementById('rm-sq').value = appData.maxes.sq;
-    document.getElementById('rm-bp').value = appData.maxes.bp;
-    document.getElementById('rm-dl').value = appData.maxes.dl;
-    document.getElementById('rm-ohp').value = appData.maxes.ohp;
-    document.getElementById('run-5k-input').value = appData.run5k;
-
-    // --- TAB NAVIGÁCIÓ ---
-    function switchTab(tabId, title) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-      
-      document.getElementById(tabId).classList.add('active');
-      document.querySelector(`[data-target="${tabId}"]`).classList.add('active');
-      document.getElementById('header-title').innerText = title;
-    }
-
-    // --- 1. EDZÉSNAPLÓ FUNKCIÓK ---
-    function saveWorkout() {
-      const date = document.getElementById('log-date').value;
-      const type = document.getElementById('log-type').value;
-      const title = document.getElementById('log-title').value.trim();
-      const details = document.getElementById('log-details').value.trim();
-      const isPR = document.getElementById('log-pr').checked;
-
-      if (!title) return alert("Kérlek adj nevet az edzésnek!");
-
-      appData.logs.unshift({ id: Date.now().toString(), date, type, title, details, isPR });
-      saveAllData();
-
-      document.getElementById('log-title').value = '';
-      document.getElementById('log-details').value = '';
-      document.getElementById('log-pr').checked = false;
-      renderLogs();
-    }
-
-    function deleteWorkout(id) {
-      if(confirm("Biztosan törlöd ezt az edzést?")) {
-        appData.logs = appData.logs.filter(w => w.id !== id);
-        saveAllData();
-        renderLogs();
-      }
-    }
-
-    function renderLogs() {
-      const container = document.getElementById('logs-container');
-      container.innerHTML = '';
-
-      if (appData.logs.length === 0) {
-        container.innerHTML = '<p class="text-center text-zinc-600 text-xs py-8 italic border border-zinc-800 border-dashed rounded-xl">Még nincs rögzített edzésed.</p>';
-        return;
-      }
-
-      appData.logs.forEach(w => {
-        container.innerHTML += `
-          <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl space-y-2 relative">
-            <div class="flex justify-between items-start">
-              <div>
-                <div class="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">${w.date} &bull; ${w.type}</div>
-                <h3 class="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
-                  ${w.title} ${w.isPR ? '<span class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded uppercase">PR</span>' : ''}
-                </h3>
-              </div>
-              <button onclick="deleteWorkout('${w.id}')" class="text-zinc-600 hover:text-red-400 transition p-1 text-xs">
-                <i class="fa-solid fa-trash-can"></i>
-              </button>
-            </div>
-            ${w.details ? `<p class="text-xs text-zinc-400 whitespace-pre-line leading-relaxed">${w.details}</p>` : ''}
-          </div>
-        `;
-      });
-    }
-
-    // --- 2. 5/3/1 KALKULÁTOR FUNKCIÓK ---
-    function round25(num) { return Math.round(num / 2.5) * 2.5; }
-
-    function calculate531() {
-      const sq = parseFloat(document.getElementById('rm-sq').value) || 0;
-      const bp = parseFloat(document.getElementById('rm-bp').value) || 0;
-      const dl = parseFloat(document.getElementById('rm-dl').value) || 0;
-      const ohp = parseFloat(document.getElementById('rm-ohp').value) || 0;
-
-      appData.maxes = { sq, bp, dl, ohp };
-      saveAllData();
-
-      const lifts = [
-        { name: 'Guggolás', tm: sq * 0.9 },
-        { name: 'Fekvenyomás', tm: bp * 0.9 },
-        { name: 'Felhúzás', tm: dl * 0.9 },
-        { name: 'OHP', tm: ohp * 0.9 }
-      ];
-
-      const weeks = [
-        { title: '1. Hét (3x5)', sets: [[0.65, 5], [0.75, 5], [0.85, '5+']] },
-        { title: '2. Hét (3x3)', sets: [[0.70, 3], [0.80, 3], [0.90, '3+']] },
-        { title: '3. Hét (5/3/1)', sets: [[0.75, 5], [0.85, 3], [0.95, '1+']] },
-        { title: '4. Hét (Deload)', sets: [[0.40, 5], [0.50, 5], [0.60, 5]] }
-      ];
-
-      let html = '';
-      weeks.forEach(week => {
-        html += `<div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl"><h3 class="font-bold text-sm text-emerald-400 mb-3 uppercase tracking-wider">${week.title}</h3>`;
-        lifts.forEach(lift => {
-          if (lift.tm > 0) {
-            let setsHtml = week.sets.map(s => `<span class="bg-zinc-950 px-2 py-1 rounded text-xs font-mono border border-zinc-800">${round25(lift.tm * s[0])}x${s[1]}</span>`).join(' ');
-            html += `<div class="flex justify-between items-center mb-2 last:mb-0 border-b border-zinc-800/50 pb-2 last:border-0"><span class="text-xs font-bold text-white w-1/3">${lift.name}</span><div class="flex gap-1">${setsHtml}</div></div>`;
-          }
-        });
-        html += `</div>`;
-      });
-      document.getElementById('table-531-container').innerHTML = html;
-    }
-
-    // --- 3. FUTÁS KALKULÁTOR FUNKCIÓK ---
-    function formatSecs(secs) {
-      const m = Math.floor(secs / 60);
-      const s = Math.round(secs % 60);
-      return `${m}:${s.toString().padStart(2, '0')}`;
-    }
-
-    function calculatePaces() {
-      const input = document.getElementById('run-5k-input').value.trim();
-      appData.run5k = input;
-      saveAllData();
-
-      if (!input.includes(':')) return alert("A formátum MM:SS legyen (pl. 25:00)");
-      
-      const parts = input.split(':');
-      const totalSecs = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-      if (isNaN(totalSecs) || totalSecs <= 0) return;
-
-      const pace5k = totalSecs / 5; // seconds per km
-      const paceT = pace5k + 15;    // Tempo pace (+15s)
-      const paceE = pace5k + 60;    // Easy pace (+60s to 90s)
-
-      document.getElementById('run-results').classList.remove('hidden');
-      document.getElementById('run-results').innerHTML = `
-        <div class="bg-emerald-950/30 border border-emerald-900/50 p-4 rounded-xl flex justify-between items-center">
-          <div>
-            <span class="text-[10px] font-black uppercase tracking-wider text-emerald-500 block">@5K (Verseny Tempó)</span>
-            <span class="text-xs text-zinc-400">Intervallumokhoz, résztávokhoz</span>
-          </div>
-          <span class="text-xl font-mono font-black text-emerald-400">${formatSecs(pace5k)}<span class="text-xs text-zinc-500 ml-1">/km</span></span>
-        </div>
-        
-        <div class="bg-amber-950/30 border border-amber-900/50 p-4 rounded-xl flex justify-between items-center">
-          <div>
-            <span class="text-[10px] font-black uppercase tracking-wider text-amber-500 block">@T (Tempó Futás)</span>
-            <span class="text-xs text-zinc-400">Folyamatos 20-30 perces futáshoz</span>
-          </div>
-          <span class="text-xl font-mono font-black text-amber-400">${formatSecs(paceT)}<span class="text-xs text-zinc-500 ml-1">/km</span></span>
-        </div>
-
-        <div class="bg-sky-950/30 border border-sky-900/50 p-4 rounded-xl flex justify-between items-center">
-          <div>
-            <span class="text-[10px] font-black uppercase tracking-wider text-sky-500 block">@E (Könnyű Futás)</span>
-            <span class="text-xs text-zinc-400">Bemelegítés, levezetés, Zone 2</span>
-          </div>
-          <span class="text-xl font-mono font-black text-sky-400">${formatSecs(paceE)}<span class="text-xs text-zinc-500 ml-1">/km</span></span>
-        </div>
-      `;
-    }
-
-    // --- KÖZÖS MENTÉS ---
-    function saveAllData() {
-      localStorage.setItem('strng_personal_data', JSON.stringify(appData));
-    }
-
-    function exportData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
-      const a = document.createElement('a');
-      a.href = dataStr;
-      a.download = `strng_naplo_${new Date().toISOString().slice(0,10)}.json`;
-      a.click();
-    }
-
-    function importData(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const imported = JSON.parse(event.target.result);
-          if (imported.logs) {
-            appData = imported;
-            saveAllData();
-            window.location.reload();
-          }
-        } catch (err) { alert("Hibás fájl!"); }
-      };
-      reader.readAsText(file);
-    }
-
-    // Inicializálás
-    renderLogs();
-    if (appData.maxes.sq > 0) calculate531();
-    if (appData.run5k) calculatePaces();
-
-  </script>
-</body>
-</html>
+        <button onclick="exportData()" class="w-full bg-zinc-800 border border-zinc-700 text-white font
