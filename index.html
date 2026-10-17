@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>STRNG Training</title>
+  <title>STRNG Training System</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
-    body { font-family: 'Montserrat', sans-serif; background-color: #000; color: #fff; -webkit-tap-highlight-color: transparent; padding-bottom: 85px; }
+    body { font-family: 'Montserrat', sans-serif; background-color: #000; color: #fff; -webkit-tap-highlight-color: transparent; padding-bottom: 90px; }
     ::-webkit-scrollbar { display: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -32,38 +32,28 @@
     </div>
   </header>
 
-  <!-- TAB 1: FŐOLDAL (PROGRAM + VÍZSZINTES NAPTÁR) -->
+  <!-- TAB 1: PROGRAM & HORIZONTÁLIS NAPTÁR -->
   <div id="tab-program" class="tab-content active flex-grow flex flex-col">
-    
-    <!-- VÍZSZINTES NAPTÁR GÖDÖR -->
+    <!-- VÍZSZINTES NAPTÁR -->
     <div class="bg-zinc-950 border-b border-zinc-900 sticky top-[57px] z-10 py-2.5 px-3">
-      <div id="calendar-bar" class="flex gap-2 overflow-x-auto no-scrollbar py-1">
-        <!-- JS generálja a 30 napot -->
-      </div>
+      <div id="calendar-bar" class="flex gap-2 overflow-x-auto no-scrollbar py-1"></div>
     </div>
 
-    <!-- AZ AKTÍV NAP TARTALMA (EGYSZERRE CSAK EGY NAP) -->
+    <!-- NAPI EGYETLEN AKTÍV EDZÉSNÉZET -->
     <main class="flex-grow p-4 max-w-lg mx-auto w-full space-y-5">
-      <div id="day-header" class="flex justify-between items-center border-b border-zinc-900 pb-2">
-        <!-- JS tölti fel -->
-      </div>
-      
-      <div id="day-content" class="space-y-4">
-        <!-- JS tölti fel a napi edzéseket -->
-      </div>
+      <div id="day-header" class="flex justify-between items-center border-b border-zinc-900 pb-2"></div>
+      <div id="day-content" class="space-y-4"></div>
     </main>
-
   </div>
 
-  <!-- TAB 2: KALKULÁTOROK (TM ÉS FUTÁS BEÁLLÍTÁSA) -->
+  <!-- TAB 2: KALKULÁTOROK (TM ÉS FUTÁS) -->
   <main id="tab-calc" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-6">
-    <!-- 5/3/1 BEÁLLÍTÁS -->
     <div class="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl space-y-4 shadow-xl">
       <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
         <h2 class="text-sm font-bold uppercase tracking-wider text-emerald-400">5/3/1 Training Max (TM)</h2>
         <span class="bg-emerald-950/60 text-emerald-400 border border-emerald-900/50 px-2.5 py-1 rounded-lg text-xs font-black tracking-wider" id="calc-cycle-lbl">1. Ciklus</span>
       </div>
-      <p class="text-xs text-zinc-400 leading-relaxed">A munkasúlyok automatikusan ezekből számolódnak a főoldali erősítő napokra:</p>
+      <p class="text-xs text-zinc-400 leading-relaxed">A munkasúlyok ezekből az adatokból számolódnak az erősítő napokra:</p>
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">Guggolás (Squat)</label>
@@ -86,24 +76,23 @@
         <button onclick="saveMaxes()" class="flex-grow bg-emerald-600 text-white font-black text-xs px-4 py-3 rounded-xl hover:bg-emerald-500 transition uppercase tracking-wide">
           Súlyok Mentése
         </button>
-        <button onclick="advanceCycle()" class="flex-grow bg-zinc-900 text-white font-black text-[11px] px-4 py-3 rounded-xl hover:bg-zinc-800 transition uppercase tracking-wide border border-zinc-800 flex items-center justify-center gap-1.5" title="+2.5kg felső, +5kg alsó">
+        <button onclick="advanceCycle()" class="flex-grow bg-zinc-900 text-white font-black text-[11px] px-4 py-3 rounded-xl hover:bg-zinc-800 transition uppercase tracking-wide border border-zinc-800 flex items-center justify-center gap-1.5">
           Ciklus Léptetés <i class="fa-solid fa-arrow-up-right-dots text-emerald-400"></i>
         </button>
       </div>
     </div>
 
-    <!-- FUTÁS IDŐK BEÁLLÍTÁSA -->
     <div class="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl space-y-4 shadow-xl">
       <h2 class="text-sm font-bold uppercase tracking-wider text-sky-400">Futás Időeredmények</h2>
-      <p class="text-xs text-zinc-400 leading-relaxed">Add meg az időidet, és a főoldali futónapok automatikusan kiszámolják a tempóidat:</p>
+      <p class="text-xs text-zinc-400 leading-relaxed">Add meg a felmérőidőidet, és a futóprogram automatikusan kiszámolja a zónatempókat:</p>
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">2K Idő (MM:SS)</label>
-          <input type="text" id="run-2k-input" placeholder="08:30" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-white text-sm text-center font-mono focus:border-sky-500">
+          <input type="text" id="run-2k-input" placeholder="08:30" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-white text-sm text-center font-mono">
         </div>
         <div>
           <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">5K Idő (MM:SS)</label>
-          <input type="text" id="run-5k-input" placeholder="24:00" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-white text-sm text-center font-mono focus:border-sky-500">
+          <input type="text" id="run-5k-input" placeholder="24:00" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-white text-sm text-center font-mono">
         </div>
       </div>
       <button onclick="saveRunTimes()" class="w-full bg-sky-600 text-white font-black text-xs px-4 py-3 rounded-xl hover:bg-sky-500 transition uppercase tracking-wide">
@@ -113,7 +102,7 @@
     </div>
   </main>
 
-  <!-- TAB 3: EDZÉSNAPLÓ / ELŐZMÉNYEK -->
+  <!-- TAB 3: EDZÉSNAPLÓ -->
   <main id="tab-log" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-5">
     <div class="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl space-y-4 shadow-xl">
       <h2 class="text-sm font-bold uppercase tracking-wider text-zinc-400">Egyéni Edzés Naplózása</h2>
@@ -127,14 +116,14 @@
         </select>
       </div>
       <input type="text" id="custom-log-title" placeholder="Edzés / Feladat megnevezése" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white p-3 rounded-xl">
-      <textarea id="custom-log-details" rows="2" placeholder="Részletek, körök, idők..." class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white p-3 rounded-xl resize-none"></textarea>
+      <textarea id="custom-log-details" rows="2" placeholder="Részletek, súlyok, idők..." class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white p-3 rounded-xl resize-none"></textarea>
       <button onclick="saveCustomLog()" class="w-full bg-white text-black font-black text-xs py-3 rounded-xl uppercase tracking-wider">
-        Naplózás
+        Mentés a Naplóba
       </button>
     </div>
 
     <div class="space-y-3">
-      <h3 class="text-xs font-black uppercase tracking-wider text-zinc-500 px-1">Rögzített Eredmények</h3>
+      <h3 class="text-xs font-black uppercase tracking-wider text-zinc-500 px-1">Rögzített Edzések & AMRAP Eredmények</h3>
       <div id="logs-container" class="space-y-2.5"></div>
     </div>
   </main>
@@ -143,8 +132,8 @@
   <main id="tab-backup" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-6">
     <div class="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl space-y-4 text-center">
       <i class="fa-solid fa-cloud-arrow-down text-3xl text-zinc-600 mb-1"></i>
-      <h2 class="text-sm font-bold uppercase tracking-wider text-white">Adatmentés</h2>
-      <p class="text-xs text-zinc-400 leading-relaxed">Minden adatod a böngésződben tárolódik. Tölts le biztonsági mentést, hogy telefonváltáskor se veszítsd el:</p>
+      <h2 class="text-sm font-bold uppercase tracking-wider text-white">Biztonsági Mentés</h2>
+      <p class="text-xs text-zinc-400 leading-relaxed">Az adataidat a telefonod böngészője tárolja. Érdemes rendszeresen letölteni a mentési fájlt:</p>
       <div class="flex flex-col gap-3 pt-3">
         <button onclick="exportData()" class="w-full bg-zinc-900 border border-zinc-800 text-white font-bold text-xs py-3.5 rounded-xl uppercase tracking-wider flex justify-center items-center gap-2">
           <i class="fa-solid fa-download"></i> Mentés Letöltése (.json)
@@ -157,299 +146,10 @@
     </div>
   </main>
 
-  <!-- INTERAKTÍV TIPPEK ÉS STRATÉGIA MODAL -->
+  <!-- TIPPEK ÉS STRATÉGIA MODAL -->
   <div id="tips-modal" class="fixed inset-0 bg-black/90 hidden justify-center items-end sm:items-center p-0 sm:p-4 z-50 backdrop-blur-sm">
     <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-t-3xl sm:rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto space-y-4 shadow-2xl">
       <div class="flex justify-between items-start border-b border-zinc-900 pb-3">
         <div>
           <span class="text-[10px] font-black uppercase text-amber-500 tracking-wider block" id="modal-subtitle">Tippek & Stratégia</span>
-          <h3 class="text-lg font-black text-white" id="modal-title">Edzés neve</h3>
-        </div>
-        <button onclick="closeTipsModal()" class="text-zinc-500 hover:text-white text-xl p-1">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2" id="modal-badges"></div>
-
-      <div class="space-y-3 pt-2">
-        <h4 class="text-xs font-black uppercase text-zinc-400 tracking-wider flex items-center gap-1.5">
-          <i class="fa-solid fa-lightbulb text-amber-400"></i> Edzői Taktika & Pacing
-        </h4>
-        <div id="modal-tips" class="text-xs text-zinc-300 space-y-2 leading-relaxed bg-zinc-900/60 p-4 rounded-xl border border-zinc-900"></div>
-      </div>
-
-      <button onclick="closeTipsModal()" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs py-3 rounded-xl uppercase tracking-wider border border-zinc-800 mt-2">
-        Bezárás
-      </button>
-    </div>
-  </div>
-
-  <!-- BOTTOM NAVIGATION -->
-  <nav class="fixed bottom-0 left-0 w-full bg-zinc-950/95 backdrop-blur-md border-t border-zinc-900 z-30">
-    <div class="flex justify-around items-center p-2 max-w-lg mx-auto">
-      <button onclick="switchTab('tab-program', 'Program')" class="nav-btn active flex flex-col items-center p-2 text-zinc-500 transition w-16" data-target="tab-program">
-        <i class="fa-solid fa-calendar-days text-lg mb-1"></i>
-        <span class="text-[10px] font-bold uppercase">Program</span>
-      </button>
-      <button onclick="switchTab('tab-calc', 'Kalkulátor')" class="nav-btn flex flex-col items-center p-2 text-zinc-500 transition w-16" data-target="tab-calc">
-        <i class="fa-solid fa-calculator text-lg mb-1"></i>
-        <span class="text-[10px] font-bold uppercase">Súlyok</span>
-      </button>
-      <button onclick="switchTab('tab-log', 'Napló')" class="nav-btn flex flex-col items-center p-2 text-zinc-500 transition w-16" data-target="tab-log">
-        <i class="fa-solid fa-book text-lg mb-1"></i>
-        <span class="text-[10px] font-bold uppercase">Napló</span>
-      </button>
-      <button onclick="switchTab('tab-backup', 'Mentés')" class="nav-btn flex flex-col items-center p-2 text-zinc-500 transition w-16" data-target="tab-backup">
-        <i class="fa-solid fa-gear text-lg mb-1"></i>
-        <span class="text-[10px] font-bold uppercase">Mentés</span>
-      </button>
-    </div>
-  </nav>
-
-  <style>
-    .nav-btn.active { color: #fff; }
-    .nav-btn.active i { color: #f97316; }
-  </style>
-
-  <script>
-    // --- 15 KONDÍCIÓS EDZÉS (AZ EREDETI BESZÉLGETÉSBŐL, "ENDURE" NÉV NÉLKÜL) ---
-    const METCONS = [
-      {
-        id: 1,
-        title: "Metcon: Engine Ladder",
-        timeCap: "20 perc",
-        targetTime: "16:30 - 18:30",
-        workout: "5 kör időre:\n• 500 m Evezés\n• 15 Burpee over rower\n• 20 Wall Ball (9/6 kg)",
-        tips: [
-          "Evezés: Ne sprinteld el az első 500 métert! Tartsd a 2k-s evezőtempód +5-7 másodperccel lassabban (kb. 1:55-2:00/500m split).",
-          "Burpee: Folyamatos, egyenletes lépkedős ritmus (step-up), a lényeg a megállás nélküli egyenletes oxigénfelvétel.",
-          "Wall Ball: Tervezz 2 szettet (12 + 8), a labdát a mellkasnál fogd, ne engedd le a combodra."
-        ]
-      },
-      {
-        id: 2,
-        title: "Metcon: Echo Chipper",
-        timeCap: "22 perc",
-        targetTime: "17:00 - 19:30",
-        workout: "Időre (For Time):\n• 40 Cal Echo Bike\n• 30 Dumbbell Snatch (22.5/15 kg)\n• 30 Box Jump Over (60/50 cm)\n• 30 DB Thruster (2x15 kg / 2x10 kg)\n• 40 Cal Echo Bike",
-        tips: [
-          "Első Echo Bike: Tartsd 60-65 RPM körül (max 70-75% effort). Ha itt megsavanyodsz, a DB Thruster kivégez.",
-          "DB Snatch: Folytonos kézváltás a levegőben vagy a talajon, a lábbal indítsd a robbanást.",
-          "DB Thruster: 3 x 10 ismétlés, a fej feletti végponton vegyél egy mély levegőt.",
-          "Második Bike: Mindent bele, itt már csak a pulzus és az akarat számít!"
-        ]
-      },
-      {
-        id: 3,
-        title: "Metcon: Tri-Erg Aerobic Capacity",
-        timeCap: "34 perc",
-        targetTime: "28:00 - 31:00",
-        workout: "3 kör (körök között 2:00 pihenő):\n• 1000 m SkiErg\n• 1500 m Evezés\n• 2500 m Echo Bike / C2 Bike",
-        tips: [
-          "Tiszta zóna 2-3 aerob terhelés. Tilos a kiégés!",
-          "Fix watt/split tartása mindhárom gépen. A körök között a szórás ne legyen több 3-5 másodpercnél.",
-          "A 2 perces pihenőben kortyolj vizet és sétálj, ne feküdj le a földre."
-        ]
-      },
-      {
-        id: 4,
-        title: "Metcon: Kettlebell & Shuttle Grinder",
-        timeCap: "20 perc",
-        targetTime: "15:30 - 18:00",
-        workout: "4 kör időre:\n• 400 m Futás (vagy 25 Cal Evezés)\n• 24 Kettlebell Swing (24/16 kg)\n• 16 KB Goblet Guggolás\n• 12 Burpee Box Jump Over (60/50 cm)",
-        tips: [
-          "A KB swingnek unbrokennek kell lennie végig mind a 4 körben.",
-          "A futás után azonnal vedd fel a kettlebellt, ne sétálgass a magnéziás vödörhöz.",
-          "A burpee box jump overnél lépkedj fel és le, hogy kíméld az achillest és a vádlit."
-        ]
-      },
-      {
-        id: 5,
-        title: "Metcon: Cardio Monster (EMOM 24)",
-        timeCap: "24 perc",
-        targetTime: "EMOM teljesítve",
-        workout: "EMOM 24 perc (6 teljes kör):\n• 1. perc: 18/14 Cal Evezés\n• 2. perc: 15 Burpee\n• 3. perc: 16/12 Cal Echo Bike\n• 4. perc: 50 Double Under (vagy 75 szimpla)",
-        tips: [
-          "Cél: 45-48 mp tiszta munka, legalább 12-15 mp kötelező pihenő minden percben.",
-          "Ha valamelyik állomáson 52 mp fölé csúszol, vegyél vissza 2 kalóriát/ismétlést a következő körben.",
-          "A Double Undernél laza vállak, csuklóból hajtsd a kötelet."
-        ]
-      },
-      {
-        id: 6,
-        title: "Metcon: Lactate Tolerance Chipper",
-        timeCap: "22 perc",
-        targetTime: "17:30 - 19:30",
-        workout: "3 kör időre:\n• 400 m Futás (vagy 24 Cal SkiErg)\n• 15 Thruster rúddal (42.5/30 kg)\n• 15 Bar-Facing Burpee\n• 20 Cal Evezés",
-        tips: [
-          "A thruster a legnehezebb szakasz. Tervezz 9 + 6 vagy 10 + 5-ös bontást rögtön az elejétől.",
-          "A burpeenél lassan, de ritmusosan lépkedj, az evezés elején vedd vissza az irányítást a légzésed felett."
-        ]
-      },
-      {
-        id: 7,
-        title: "Metcon: The 40-Min Engine Test",
-        timeCap: "40 perc",
-        targetTime: "3 - 3.5 kör",
-        workout: "40 perc AMRAP:\n• 1000 m Evezés\n• 40 Guggolás saját testsúllyal\n• 800 m Futás\n• 30 Fekvőtámasz\n• 20 Húzódzkodás / Ring Row\n• 50 Cal Bike",
-        tips: [
-          "Maratoni mentalitás: az első 20 percben tilos kapkodni, orron át lélegezz, amennyire lehet.",
-          "A fekvőtámaszokat kezdd el korán megbontani (pl. 6 x 5 ismétlés), ne várd meg az izom kifáradását."
-        ]
-      },
-      {
-        id: 8,
-        title: "Metcon: Dumbbell Power & Capacity",
-        timeCap: "20 perc",
-        targetTime: "14:00 - 16:30",
-        workout: "5 kör időre (körök közt 1:30 pihenő):\n• 15 Cal Echo Bike\n• 12 DB Felhúzás (2x22.5/15 kg)\n• 9 DB Hang Power Clean\n• 6 DB Push Press",
-        tips: [
-          "A súlyzós komplexet (12 felhúzás + 9 clean + 6 press) próbáld meg egyben, lerakás nélkül befejezni.",
-          "Az Echo Bike-on 75-80%-os tempót válassz, hogy a súlyzóra még maradjon robbanékonyság."
-        ]
-      },
-      {
-        id: 9,
-        title: "Metcon: Rowing Pyramid & TTB",
-        timeCap: "22 perc",
-        targetTime: "16:00 - 18:30",
-        workout: "Időre (For Time):\n• 250 m Evezés + 10 Toes to Bar\n• 500 m Evezés + 15 Toes to Bar\n• 750 m Evezés + 20 Toes to Bar\n• 500 m Evezés + 15 Toes to Bar\n• 250 m Evezés + 10 Toes to Bar",
-        tips: [
-          "A 750 méteres evezés a teszt mentális közepe: itt nem szabad feladni a tervezett ritmust.",
-          "A lábemeléseket (TTB) kis, feszes szettekben végezd (pl. 5-ösök rövid 3-4 mp pihenőkkel)."
-        ]
-      },
-      {
-        id: 10,
-        title: "Metcon: Ski & Box Step-Over Interval",
-        timeCap: "20 perc",
-        targetTime: "70+ step-over",
-        workout: "4 kör (3 perc munka / 2 perc pihenő):\n• 350 m SkiErg\n• Max DB Box Step-Over (2x15 kg / 2x10 kg, 50 cm) a fennmaradó időben",
-        tips: [
-          "A SkiErget 1:15–1:25 alatt fejezd be, hogy legalább másfél perced maradjon a dobozon.",
-          "A dobozon folyamatos, monoton tempót tarts: ne kapkodj, a sarkad mindig érjen fel a dobozra."
-        ]
-      },
-      {
-        id: 11,
-        title: "Metcon: Devil's Grit",
-        timeCap: "25 perc",
-        targetTime: "19:00 - 22:00",
-        workout: "5 kör időre:\n• 20 Cal Evezés\n• 15 Hand-Release Fekvőtámasz\n• 15 Ugró kitörés (Jumping Lunges)\n• 8 Devil's Press (2x15/10 kg)",
-        tips: [
-          "A Devil's Pressnél ne a karodból emelj: robbants a csípőddel a fejed fölé.",
-          "Az ugró kitörés savasítani fog, közvetlenül utána az evezőn az első 5 húzás legyen laza, míg kitisztul a lábad."
-        ]
-      },
-      {
-        id: 12,
-        title: "Metcon: Triple Threat Sprint",
-        timeCap: "23 perc",
-        targetTime: "17:30 - 20:00",
-        workout: "Időre (For Time):\n• 1500 m Evezés\n• 3000 m C2 Bike (vagy 75 Cal Echo)\n• 1200 m Futás",
-        tips: [
-          "Váltáskor a combjaid kőkemények lesznek. Az evezés utáni első 1 perc a bringán legyen pörgetős (90+ RPM).",
-          "A futáson az első 400 méteren találd meg a lépéshosszodat, az utolsó 400 méteren pedig mindent adj ki magadból."
-        ]
-      },
-      {
-        id: 13,
-        title: "Metcon: Barbell Aerobic Hybrid",
-        timeCap: "24 perc",
-        targetTime: "18:00 - 21:00",
-        workout: "4 kör időre:\n• 400 m Futás\n• 15 Power Snatch rúddal (35/25 kg)\n• 15 Burpee over bar\n• 15 Cal Echo Bike",
-        tips: [
-          "A súly könnyű, de a pulzus az egekben lesz. A snatcheket gyors egyesekkel (drop & reset) csináld.",
-          "A burpee over bar-nál forogj azonnal a rúd felé, ne veszíts másodperceket a leállással."
-        ]
-      },
-      {
-        id: 14,
-        title: "Metcon: 30-20-10 Calorie Burn",
-        timeCap: "19 perc",
-        targetTime: "14:00 - 16:30",
-        workout: "Időre (For Time):\n• 30 Cal Evezés + 30 Wall Ball + 30 Box Jump\n• 20 Cal Echo Bike + 20 Wall Ball + 20 Box Jump\n• 10 Cal SkiErg + 10 Wall Ball + 10 Box Jump",
-        tips: [
-          "Negatív split stratégia: a 30-as körben 75%-os fegyelmezett tempó, a 20-asban 85%, a 10-es záró körben teljes sprint!",
-          "A box jumpnál lépkedj lefelé a dobozról, hogy kíméld a vádlidat a fali labdák előtt."
-        ]
-      },
-      {
-        id: 15,
-        title: "Metcon: The Final Benchmark",
-        timeCap: "26 perc",
-        targetTime: "20:00 - 23:30",
-        workout: "Időre (For Time):\n• 100 Double Under\n• 50 Cal Evezés\n• 40 Wall Ball (9/6 kg)\n• 30 Burpee\n• 20 DB Hang Clean & Jerk (2x20/15 kg)\n• 50 Cal Echo Bike",
-        tips: [
-          "A legvégső aerob kapacitás teszt. Az első 50 kalóriás evezésen tartsd a stabil, fegyelmezett ritmust.",
-          "A DB lökésnél használd a lábaid erejét. Az utolsó 50 kalóriás Echo Bike-ra már mindent fel kell tenni!"
-        ]
-      }
-    ];
-
-    // --- 15 FUTÓ EDZÉSPROGRAM ZÓNÁKKAL ---
-    const RUN_WORKOUTS = [
-      {
-        id: 1,
-        title: "Intervallum: 5 × 800m",
-        desc: "Bemelegítés: 1 km könnyű @E\nFő rész: 5 × 800 m @2k (pihenő: 2:00 álló vagy séta)\nLevezetés: 1 km laza kocogás @E",
-        tips: ["Minden 800 métert pontosan a 2k-s versenytempódban fuss le. Ne kezdj gyorsabban!", "A 2 perces pihenő elegendő a laktát kitisztulásához, de maradj mozgásban."]
-      },
-      {
-        id: 2,
-        title: "Tempófutás: 20 perc küszöb",
-        desc: "Bemelegítés: 1.5 km @E + 3 x 60m repülő\nFő rész: 20 perc folyamatos futás @T tempóban\nLevezetés: 1 km @E",
-        tips: ["A @T tempó 'kellemetlenül kényelmes'. Beszélni már csak tőszavakban tudsz, de stabilan bírnod kell 20 percig.", "Koncentrálj a magas lépésfrekvenciára."]
-      },
-      {
-        id: 3,
-        title: "Hosszú futás: 8 km alapozás",
-        desc: "Fő rész: 8 km folyamatos futás @E zónában (Zone 2)",
-        tips: ["Végig orrlégzés! Ha zihálnod kell, azonnal lassíts a tempón.", "Ez az edzés építi a mitokondriumokat és a szív bal kamrájának térfogatát."]
-      },
-      {
-        id: 4,
-        title: "Intervallum: 6 × 800m kapacitás",
-        desc: "Bemelegítés: 1.2 km @E\nFő rész: 6 × 800 m @2k (pihenő: 2:00)\nLevezetés: 800 m @E",
-        tips: ["Egyel több ismétlés, mint a múltkor. Az 4. és 5. résztávnál dől el az edzés minősége.", "Tartsd a ritmust a fáradtság ellenére is."]
-      },
-      {
-        id: 5,
-        title: "Tempófutás: 25 perc progresszió",
-        desc: "Bemelegítés: 1.5 km @E\nFő rész: 25 perc folyamatos @T tempóban\nLevezetés: 1.5 km @E",
-        tips: ["5 perccel hosszabb, mint az 1. héten. Az első 15 percben tartsd vissza magad, az utolsó 5 percben gyorsíthatsz kicsit."]
-      },
-      {
-        id: 6,
-        title: "Hosszú futás: 9 km aerob bázis",
-        desc: "Fő rész: 9 km egyenletes futás @E zónában",
-        tips: ["Figyelj a folyadékbevitelre előtte. Egyenletes, könnyed léptek."]
-      },
-      {
-        id: 7,
-        title: "Résztáv: 4 × 1000m VO2 Max",
-        desc: "Bemelegítés: 1.5 km @E + dinamikus nyújtás\nFő rész: 4 × 1000 m @5k (pihenő: 2:00)\nLevezetés: 1 km @E",
-        tips: ["Az 1000 méteres résztávok az 5 km-es versenytempódban mennek. Ez a leghatékonyabb VO2 max fejlesztő blokk."]
-      },
-      {
-        id: 8,
-        title: "Vegyes blokk: 20p @T + 3km @E",
-        desc: "Bemelegítés: 1 km @E\nFő rész 1: 20 perc @T tempófutás\nFő rész 2: 3 km azonnali átmenet @E zónára\nLevezetés: 500 m séta",
-        tips: ["A tempófutás után azonnal válts át könnyű futásra megállás nélkül. Megtanítja a testet fáradtan regenerálódni."]
-      },
-      {
-        id: 9,
-        title: "Résztáv: 5 × 1000m csúcs",
-        desc: "Bemelegítés: 1.5 km @E\nFő rész: 5 × 1000 m @5k (pihenő: 2:00)\nLevezetés: 1 km @E",
-        tips: ["Öt teljes kilométer versenytempóban, pihenőkkel tagolva. Tartsd a szétesés nélküli futótechnikát."]
-      },
-      {
-        id: 10,
-        title: "Hosszú futás: 10 km mérföldkő",
-        desc: "Fő rész: 10 km folyamatos @E futás (Zone 2)",
-        tips: ["Kényelmes, beszélgetős tempó. A pulzus maradjon lent!"]
-      },
-      {
-        id: 11,
-        title: "Tempófutás: 30 perc áll
+          <h3 class="text-lg font-black text-white
