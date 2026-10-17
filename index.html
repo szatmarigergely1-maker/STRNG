@@ -1,2089 +1,371 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="STRNG" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <link rel="icon" href="icon-192.png" />
-  <script src="config.js"></script>
-  <title>STRNG Fitness Rendszer</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>STRNG Personal Log</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root { color-scheme: dark; box-sizing: border-box; }
-    html { scroll-padding-top: env(safe-area-inset-top, 0px); }
-    body { background-color: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    #topStack { padding-top: env(safe-area-inset-top, 0px); background: #000; }
-    #bottomNav { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px)); }
-
-    @keyframes viewIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-    .view-in { animation: viewIn .22s cubic-bezier(.2,.7,.3,1); }
-    @keyframes modalIn { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
-    .modal-in { animation: modalIn .2s ease-out; }
-    @keyframes shakeAnim { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
-    .shake { animation: shakeAnim .3s; }
-    @media (prefers-reduced-motion: reduce) { .view-in, .modal-in, .shake { animation: none; } }
-
-    .card-press { transition: transform .12s ease, border-color .15s ease; }
-    .card-press:active { transform: scale(.985); }
-    .btn-press { transition: transform .1s ease, opacity .1s ease; }
-    .btn-press:active { transform: scale(.96); opacity: .9; }
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap');
+    body { font-family: 'Montserrat', sans-serif; background-color: #000; color: #fff; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
+    /* Hide scrollbar for clean app look */
+    ::-webkit-scrollbar { display: none; }
+    .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
   </style>
 </head>
-<body class="selection:bg-emerald-500 selection:text-black antialiased pb-28 min-h-screen">
+<body class="antialiased min-h-screen flex flex-col">
 
-  <div id="topStack" class="sticky top-0 z-50">
-    <!-- SZEREPKÖR VÁLTÓ -->
-    <div class="bg-zinc-900 border-b border-zinc-800 px-4 py-2 flex items-center justify-between text-xs">
-      <div class="flex items-center gap-2">
-        <span class="text-zinc-400 font-bold">MÓD:</span>
-        <span id="roleBadge" class="px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider bg-emerald-500 text-black text-[10px]">Vendég Nézet</span>
+  <!-- TOP HEADER -->
+  <header class="p-5 border-b border-zinc-800 bg-zinc-950/90 sticky top-0 backdrop-blur z-20 flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <span class="text-xl font-black tracking-tighter">STRNG</span>
+      <span class="text-xs uppercase tracking-widest text-zinc-400 border-l border-zinc-700 pl-2 font-bold" id="header-title">Napló</span>
+    </div>
+  </header>
+
+  <!-- TAB 1: EDZÉSNAPLÓ -->
+  <main id="tab-log" class="tab-content active flex-grow p-4 max-w-lg mx-auto w-full space-y-6">
+    <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4 shadow-lg">
+      <div class="flex justify-between items-center">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-zinc-400">Új edzés rögzítése</h2>
+        <input type="date" id="log-date" class="bg-zinc-950 border border-zinc-800 text-xs text-white px-2.5 py-1.5 rounded-lg focus:outline-none">
       </div>
-      <div class="flex items-center gap-1.5">
-        <button onclick="app.go('home')" id="btnGuest" class="px-3 py-1 rounded-lg font-bold bg-white text-black transition-all">Vendég</button>
-        <button onclick="app.go('admin')" id="btnAdmin" class="px-3 py-1 rounded-lg font-bold bg-zinc-800 text-zinc-300 hover:text-white transition-all">Admin</button>
+      <div class="grid grid-cols-2 gap-2">
+        <select id="log-type" class="bg-zinc-950 border border-zinc-800 text-xs text-white p-3 rounded-xl focus:outline-none">
+          <option value="Súlyemelés">Súlyemelés</option>
+          <option value="WOD / Metcon">WOD / Metcon</option>
+          <option value="STRNG Dads">STRNG Dads</option>
+          <option value="Futás">Futás</option>
+        </select>
+        <input type="text" id="log-title" placeholder="Edzés neve (pl. Fran)" class="bg-zinc-950 border border-zinc-800 text-xs text-white p-3 rounded-xl focus:outline-none">
+      </div>
+      <textarea id="log-details" rows="3" placeholder="Súlyok, ismétlések, időeredmények..." class="w-full bg-zinc-950 border border-zinc-800 text-xs text-white p-3 rounded-xl focus:outline-none resize-none"></textarea>
+      <div class="flex items-center justify-between pt-1">
+        <label class="flex items-center gap-2 cursor-pointer text-xs text-zinc-400 font-semibold select-none">
+          <input type="checkbox" id="log-pr" class="w-4 h-4 rounded text-orange-500 bg-zinc-950 border-zinc-700">
+          Új PR 🏆
+        </label>
+        <button onclick="saveWorkout()" class="bg-white text-black font-extrabold text-xs px-6 py-3 rounded-xl hover:bg-zinc-200 transition uppercase tracking-wide">
+          Mentés
+        </button>
       </div>
     </div>
 
-    <!-- FEJLÉC -->
-    <header class="bg-black/95 border-b border-zinc-900 pt-3 pb-3 px-4 flex justify-between items-center backdrop-blur-md">
-      <button onclick="app.go(app.isAdminView() ? 'admin' : 'home')" class="flex items-baseline gap-2 hover:opacity-80 active:scale-95 transition-all text-left">
-        <span class="font-black text-2xl tracking-tighter text-white">STRNG</span>
-        <span class="font-light tracking-[0.2em] text-zinc-500 text-sm border-l border-zinc-700 pl-2">FITNESS</span>
+    <!-- LOG LIST -->
+    <div id="logs-container" class="space-y-3"></div>
+  </main>
+
+  <!-- TAB 2: 5/3/1 KALKULÁTOR -->
+  <main id="tab-531" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-6">
+    <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
+      <h2 class="text-sm font-bold uppercase tracking-wider text-emerald-500">1RM (Egyismétléses Maximumok)</h2>
+      <p class="text-xs text-zinc-400">Add meg a jelenlegi maximumaidat (kg). A rendszer a 90%-os Training Max (TM) alapján számolja a 4 hetes ciklust.</p>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">Guggolás (Squat)</label>
+          <input type="number" id="rm-sq" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
+        </div>
+        <div>
+          <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">Fekvenyomás (Bench)</label>
+          <input type="number" id="rm-bp" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
+        </div>
+        <div>
+          <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">Felhúzás (Deadlift)</label>
+          <input type="number" id="rm-dl" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
+        </div>
+        <div>
+          <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">Mellből nyomás (OHP)</label>
+          <input type="number" id="rm-ohp" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm" placeholder="kg">
+        </div>
+      </div>
+      <button onclick="calculate531()" class="w-full bg-emerald-600 text-white font-extrabold text-xs px-6 py-3 rounded-xl hover:bg-emerald-500 transition uppercase tracking-wide">
+        Ciklus Kiszámolása
       </button>
-      <div id="headerRight"></div>
-    </header>
-    <div id="demoBanner" class="hidden bg-amber-500 text-black text-[10px] font-black text-center py-1 px-2">DEMÓ MÓD – nincs Firebase beállítva, az adatok csak ezen az eszközön vannak</div>
-  </div>
-
-  <!-- TOAST -->
-  <div id="toast" class="fixed left-1/2 -translate-x-1/2 z-[100] max-w-xs w-full px-4 hidden transition-all duration-300 pointer-events-none" style="top: calc(6rem + env(safe-area-inset-top, 0px));">
-    <div id="toastContent" class="flex items-center gap-2 px-4 py-3 rounded-2xl shadow-2xl font-bold text-xs bg-white text-black">
-      <span id="toastMsg">Értesítés</span>
     </div>
-  </div>
+    <div id="table-531-container" class="space-y-4"></div>
+  </main>
 
-  <main id="appContainer" class="max-w-md mx-auto px-4 py-4"></main>
+  <!-- TAB 3: FUTÁS KALKULÁTOR -->
+  <main id="tab-run" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-6">
+    <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4">
+      <h2 class="text-sm font-bold uppercase tracking-wider text-sky-400">Futás Tempókalkulátor</h2>
+      <p class="text-xs text-zinc-400">Add meg a legutóbbi, vagy megcélzott 5 km-es idődet (perc:másodperc).</p>
+      
+      <div class="flex gap-3 items-end">
+        <div class="flex-grow">
+          <label class="text-[10px] uppercase text-zinc-500 font-bold block mb-1">5K Időeredmény (MM:SS)</label>
+          <input type="text" id="run-5k-input" placeholder="25:00" class="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white text-sm focus:outline-none focus:border-sky-500">
+        </div>
+        <button onclick="calculatePaces()" class="bg-sky-600 text-white font-extrabold text-xs px-6 py-3.5 rounded-xl hover:bg-sky-500 transition uppercase tracking-wide">
+          Számol
+        </button>
+      </div>
+    </div>
+    <div id="run-results" class="hidden grid grid-cols-1 gap-3">
+      <!-- Generated Paces go here -->
+    </div>
+  </main>
 
-  <nav id="bottomNav" class="fixed bottom-0 inset-x-0 z-50 bg-zinc-950/95 backdrop-blur-md border-t border-zinc-900 px-3 pt-2"></nav>
+  <!-- TAB 4: MENTÉS / ADATOK -->
+  <main id="tab-backup" class="tab-content flex-grow p-4 max-w-lg mx-auto w-full space-y-6">
+    <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4 text-center">
+      <i class="fa-solid fa-cloud-arrow-down text-3xl text-zinc-600 mb-2"></i>
+      <h2 class="text-sm font-bold uppercase tracking-wider text-white">Biztonsági mentés</h2>
+      <p class="text-xs text-zinc-400 leading-relaxed">Az adataidat a telefonod memóriája tárolja. Érdemes havonta letölteni egy biztonsági mentést a fájljaid közé.</p>
+      <div class="flex flex-col gap-3 pt-4">
+        <button onclick="exportData()" class="w-full bg-zinc-800 border border-zinc-700 text-white font-bold text-xs px-6 py-3 rounded-xl transition uppercase tracking-wide flex justify-center items-center gap-2">
+          <i class="fa-solid fa-download"></i> Mentés letöltése (.json)
+        </button>
+        <label class="w-full bg-zinc-800 border border-zinc-700 text-white font-bold text-xs px-6 py-3 rounded-xl transition uppercase tracking-wide flex justify-center items-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-upload"></i> Mentés Visszaállítása
+          <input type="file" class="hidden" accept=".json" onchange="importData(event)">
+        </label>
+      </div>
+    </div>
+  </main>
 
-  <div id="modalSlot"></div>
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav class="fixed bottom-0 left-0 w-full bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-800 pb-safe z-30">
+    <div class="flex justify-around items-center p-2 max-w-lg mx-auto">
+      <button onclick="switchTab('tab-log', 'Napló')" class="nav-btn active flex flex-col items-center p-2 text-zinc-500 hover:text-white transition w-16" data-target="tab-log">
+        <i class="fa-solid fa-book text-lg mb-1"></i>
+        <span class="text-[10px] font-bold uppercase">Napló</span>
+      </button>
+      <button onclick="switchTab('tab-531', '5/3/1')" class="nav-btn flex flex-col items-center p-2 text-zinc-500 hover:text-white transition w-16" data-target="tab-531">
+        <i class="fa-solid fa-dumbbell text-lg mb-1"></i>
+        <span class="text-[10px] font-bold uppercase">5/3/1</span>
+      </button>
+      <button onclick="switchTab('tab-run', 'Futás')" class="nav-btn flex flex-col items-center p-2 text-zinc-500 hover:text-white transition w-16" data-target="tab-run">
+        <i class="fa-solid fa-person-running text-lg mb-1"></i>
+        <span class="text-[10px] font-bold uppercase">Futás</span>
+      </button>
+      <button onclick="switchTab('tab-backup', 'Mentés')" class="nav-btn flex flex-col items-center p-2 text-zinc-500 hover:text-white transition w-16" data-target="tab-backup">
+        <i class="fa-solid fa-gear text-lg mb-1"></i>
+        <span class="text-[10px] font-bold uppercase">Mentés</span>
+      </button>
+    </div>
+  </nav>
+
+  <style>
+    /* Active Nav State */
+    .nav-btn.active { color: #fff; }
+    .nav-btn.active i { color: #f97316; /* Tailwind orange-500 */ }
+  </style>
 
   <script>
-    /* 1. KONSTANSOK */
-    const STORE_KEY = 'strng_fitness_v2';
-    const DEFAULT_PIN = '1234';
-    const CFG = window.STRNG_CONFIG || {};
-    const CLOUD_ON = !!(CFG.firebase && CFG.firebase.apiKey && !/^IDE/.test(CFG.firebase.apiKey));
-    const ADMIN_EMAILS = (CFG.adminEmails || []).map(e => String(e).toLowerCase());
-
-    const PASS_TYPES = [
-      { id: 'pass_1', name: '1 alkalmas jegy', short: '1 alk.', price: 5000, credits: 1, monthly: false },
-      { id: 'pass_4', name: '4 alkalmas bérlet', short: '4 alk.', price: 14900, credits: 4, monthly: false },
-      { id: 'pass_8', name: '8 alkalmas bérlet', short: '8 alk.', price: 28000, credits: 8, monthly: false },
-      { id: 'pass_12', name: '12 alkalmas bérlet', short: '12 alk.', price: 34900, credits: 12, monthly: false },
-      { id: 'pass_m', name: 'Havi Korlátlan bérlet', short: 'Havi', price: 40000, credits: 0, monthly: true }
-    ];
-    const CLASS_TYPES = ['STRNG Performance', 'Cross Start', 'Cross', 'STRNG Dads Club', 'Személyi edzés', 'Mobilitás & Nyújtás'];
-
-    const formatFt = (v) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(v || 0);
-    const pad2 = (n) => String(n).padStart(2, '0');
-    const toLocalISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-    const todayStr = () => toLocalISO(new Date());
-    const todayHu = () => new Date().toLocaleDateString('hu-HU');
-    const huStamp = (ts) => new Date(ts).toLocaleString('hu-HU', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-
-    const esc = (s) => String(s ?? '')
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    const jsArg = (v) => esc(JSON.stringify(String(v)));
-
-    const classDateTime = (cls) => new Date(`${cls.date}T${cls.time}`);
-    const isPastClass = (cls) => classDateTime(cls).getTime() < Date.now();
-    const byDateTime = (a, b) => classDateTime(a) - classDateTime(b);
-
-    const generateDates = () => {
-      const dates = [];
-      const days = ['Vasárnap', 'Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat'];
-      const shortDays = ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'];
-      for (let i = 0; i < 14; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() + i);
-        dates.push({ dateString: toLocalISO(d), dayName: days[d.getDay()], shortDay: shortDays[d.getDay()] });
-      }
-      return dates;
+    // --- ADATBÁZIS KEZELÉS ---
+    let appData = JSON.parse(localStorage.getItem('strng_personal_data')) || {
+      logs: [],
+      maxes: { sq: '', bp: '', dl: '', ohp: '' },
+      run5k: ''
     };
 
-    const ROUTES = {
-      'home':             { mode: 'guest', label: 'Főoldal' },
-      'schedule':         { mode: 'guest', label: 'Órarend' },
-      'plan':             { mode: 'guest', label: 'Edzésterv' },
-      'calc':             { mode: 'guest', label: '5/3/1' },
-      'run':              { mode: 'guest', label: 'Futás' },
-      'pass':             { mode: 'guest', label: 'Bérletem' },
-      'admin':            { mode: 'admin', label: 'Áttekintés' },
-      'admin/schedule':   { mode: 'admin', label: 'Órák & WOD' },
-      'admin/attendance': { mode: 'admin', label: 'Jelenlét' },
-      'admin/users':      { mode: 'admin', label: 'Vendégek' },
-      'admin/financials': { mode: 'admin', label: 'Pénzügy' }
-    };
-
-    /* 2. ADATOK */
-    const defaultData = () => {
-      const dates = generateDates();
-      const nowStr = todayHu();
-      return {
-        users: [
-          { id: 'u1', name: 'Kovács Anna', email: 'anna@pelda.hu', passType: 'ticket', credits: 4, expirationDate: '2026-11-20' },
-          { id: 'u2', name: 'Nagy Péter', email: 'peter@pelda.hu', passType: 'none', credits: 0, expirationDate: null },
-          { id: 'u3', name: 'Tóth Balázs', email: 'balazs@pelda.hu', passType: 'monthly', credits: 0, expirationDate: '2026-11-10' }
-        ],
-        classes: [
-          { id: 'c1', date: dates[0].dateString, time: '16:00', name: 'STRNG Performance', capacity: 12,
-            workoutPlan: '5 KÖR IDŐRE:\n- 15 Kettlebell Swing (24 kg)\n- 10 Burpee Box Jump Over\n- 200m Sprint\n- 1 perc pihenő a körök között' },
-          { id: 'c2', date: dates[0].dateString, time: '17:30', name: 'Cross Start', capacity: 10,
-            workoutPlan: 'ERŐ & TECHNIKA:\n- Felhúzás technika gyakorlás\n- EMOM 12 perc:\n  * Páratlan: 8 Felhúzás\n  * Páros: 10 Fekvőtámasz' },
-          { id: 'c3', date: dates[1].dateString, time: '18:00', name: 'Cross', capacity: 12,
-            workoutPlan: 'WOD "Fran":\n21-15-9 ismétlés:\n- Thruster (43 / 30 kg)\n- Húzódzkodás' },
-          { id: 'c4', date: dates[1].dateString, time: '19:15', name: 'STRNG Dads Club', capacity: 12,
-            workoutPlan: 'Csapat WOD 3 fős brigádokban:\n- 1000m Evezés\n- 100 Wall Ball\n- 50 Szinkron felülés' }
-        ],
-        bookings: [
-          { id: 'b1', classId: 'c1', name: 'Kovács Anna', email: 'anna@pelda.hu', attendanceStatus: 'PENDING' },
-          { id: 'b2', classId: 'c1', name: 'Nagy Péter', email: 'peter@pelda.hu', attendanceStatus: 'ATTENDED' }
-        ],
-        transactions: [
-          { id: 't1', date: nowStr, type: 'INCOME', category: '4 alkalmas bérlet', amount: 14900, customerName: 'Kovács Anna', invoiceStatus: 'PENDING' },
-          { id: 't2', date: nowStr, type: 'EXPENSE', category: 'Terembérlet előleg', amount: 45000, customerName: 'Terem Kft.', invoiceStatus: 'ISSUED' },
-          { id: 't3', date: nowStr, type: 'INCOME', category: 'Havi Korlátlan bérlet', amount: 40000, customerName: 'Tóth Balázs', invoiceStatus: 'ISSUED' }
-        ],
-        activity: [
-          { id: 'a1', at: Date.now() - 3600000, text: 'Kovács Anna lefoglalta: STRNG Performance', kind: 'booking' },
-          { id: 'a2', at: Date.now() - 7200000, text: 'Havi bérlet aktiválva: Tóth Balázs', kind: 'pass' }
-        ],
-        activeEmail: 'anna@pelda.hu',
-        pin: DEFAULT_PIN
-      };
-    };
-
-    const loadData = () => {
-      if (CLOUD_ON) {
-        let ae = null;
-        try { ae = localStorage.getItem('strng_active_email') || null; } catch (e) {}
-        return { users: [], classes: [], bookings: [], transactions: [], activity: [], activeEmail: ae, pin: DEFAULT_PIN };
-      }
-      try {
-        const raw = localStorage.getItem(STORE_KEY);
-        if (raw) {
-          const d = JSON.parse(raw);
-          if (d && Array.isArray(d.users) && Array.isArray(d.classes) && Array.isArray(d.bookings) && Array.isArray(d.transactions)) {
-            return {
-              users: d.users, classes: d.classes, bookings: d.bookings, transactions: d.transactions,
-              activity: Array.isArray(d.activity) ? d.activity : [],
-              activeEmail: d.activeEmail || null, pin: d.pin || DEFAULT_PIN
-            };
-          }
-        }
-      } catch (e) { /* fallback */ }
-      return defaultData();
-    };
-
-    const sessionAdmin = () => { try { return sessionStorage.getItem('strng_admin') === '1'; } catch (e) { return false; } };
-    const setSessionAdmin = (v) => { try { v ? sessionStorage.setItem('strng_admin', '1') : sessionStorage.removeItem('strng_admin'); } catch (e) {} };
-
-    const initialDates = generateDates();
-    const initialData = loadData();
-
-    /* 3. APP */
-    const app = {
-      view: 'home',
-      pendingAdmin: null,
-      adminUnlocked: sessionAdmin(),
-      selectedDate: initialDates[0].dateString,
-      dates: initialDates,
-      openWodId: null,
-      userSearchTerm: '',
-
-      users: initialData.users,
-      classes: initialData.classes,
-      bookings: initialData.bookings,
-      transactions: initialData.transactions,
-      activity: initialData.activity,
-      activeEmail: initialData.activeEmail,
-      pin: initialData.pin,
-
-      save: function() {
-        if (CLOUD_ON) {
-          try { localStorage.setItem('strng_active_email', this.activeEmail || ''); } catch (e) {}
-          if (window.cloud) window.cloud.push();
-          return;
-        }
-        try {
-          localStorage.setItem(STORE_KEY, JSON.stringify({
-            users: this.users, classes: this.classes, bookings: this.bookings,
-            transactions: this.transactions, activity: this.activity.slice(0, 50),
-            activeEmail: this.activeEmail, pin: this.pin
-          }));
-        } catch (e) { console.error('Hiba mentés közben:', e); }
-      },
-
-      log: function(text, kind) {
-        if (CLOUD_ON && kind === 'finance') return;
-        this.activity.unshift({ id: 'a_' + Date.now() + Math.random().toString(36).slice(2, 6), at: Date.now(), text, kind: kind || 'class' });
-        this.activity = this.activity.slice(0, 50);
-      },
-
-      commit: function(msg, fn, logText, logKind) {
-        if (fn) fn();
-        if (logText) this.log(logText, logKind);
-        this.save();
-        this.render();
-        if (msg) this.toast(msg);
-      },
-
-      toast: function(msg, isError = false) {
-        const toast = document.getElementById('toast');
-        const content = document.getElementById('toastContent');
-        document.getElementById('toastMsg').innerText = msg;
-        content.className = `flex items-center gap-2 px-4 py-3 rounded-2xl shadow-2xl font-bold text-xs ${isError ? 'bg-red-600 text-white' : 'bg-white text-black'}`;
-        toast.classList.remove('hidden');
-        clearTimeout(this._toastTimer);
-        this._toastTimer = setTimeout(() => toast.classList.add('hidden'), 2800);
-      },
-
-      me: function() { const f = this.users.find(u => u.email === this.activeEmail); return CLOUD_ON ? (f || null) : (f || this.users[0] || null); },
-      passActive: function(u) {
-        if (!u) return false;
-        if (u.expirationDate && u.expirationDate < todayStr()) return false;
-        if (u.passType === 'monthly') return true;
-        return (u.credits || 0) > 0;
-      },
-      passLabel: function(u) {
-        if (!u) return 'Nincs profil';
-        if (u.passType === 'monthly') return 'Havi Korlátlan';
-        if (u.passType === 'ticket') return `${u.credits || 0} alkalom maradt`;
-        return 'Nincs aktív bérlet';
-      },
-      bookingsFor: function(classId) { return this.bookings.filter(b => b.classId === classId); },
-      spotsLeft: function(cls) { return Math.max(0, cls.capacity - this.bookingsFor(cls.id).length); },
-      myUpcoming: function() {
-        const u = this.me();
-        if (!u) return [];
-        return this.bookings.filter(b => b.email === u.email)
-          .map(b => ({ b, cls: this.classes.find(c => c.id === b.classId) }))
-          .filter(x => x.cls && !isPastClass(x.cls))
-          .sort((x, y) => byDateTime(x.cls, y.cls));
-      },
-      myPast: function() {
-        const u = this.me();
-        if (!u) return [];
-        return this.bookings.filter(b => b.email === u.email)
-          .map(b => ({ b, cls: this.classes.find(c => c.id === b.classId) }))
-          .filter(x => x.cls && (isPastClass(x.cls) || x.b.attendanceStatus === 'ATTENDED'))
-          .sort((x, y) => byDateTime(y.cls, x.cls));
-      },
-      finance: function() {
-        const income = this.transactions.filter(t => t.type === 'INCOME').reduce((a, t) => a + t.amount, 0);
-        const expense = this.transactions.filter(t => t.type === 'EXPENSE').reduce((a, t) => a + t.amount, 0);
-        const todayInc = this.transactions.filter(t => t.type === 'INCOME' && t.date === todayHu()).reduce((a, t) => a + t.amount, 0);
-        const pending = this.transactions.filter(t => t.type === 'INCOME' && t.invoiceStatus === 'PENDING').length;
-        return { income, expense, net: income - expense, todayInc, pending };
-      },
-
-      isAdminView: function() { return !!ROUTES[this.view] && ROUTES[this.view].mode === 'admin'; },
-      go: function(path) {
-        const target = '#/' + path;
-        if (location.hash === target) this.applyRoute();
-        else location.hash = target;
-      },
-      applyRoute: function() {
-        const path = (location.hash || '').replace(/^#\/?/, '') || 'home';
-        const key = ROUTES[path] ? path : 'home';
-        if (ROUTES[key].mode === 'admin' && !this.adminUnlocked) {
-          this.pendingAdmin = key;
-          this.view = 'pin';
-        } else {
-          this.view = key;
-          if (ROUTES[key].mode === 'admin') this.pendingAdmin = null;
-        }
-        this.render();
-      },
-
-      tryUnlock: function() {
-        if (CLOUD_ON) { if (window.cloud) window.cloud.signIn(); else this.toast('Kapcsolódás folyamatban...', true); return; }
-        const input = document.getElementById('pinInput');
-        const val = input ? input.value : '';
-        if (val === this.pin) {
-          this.adminUnlocked = true;
-          setSessionAdmin(true);
-          const target = this.pendingAdmin || 'admin';
-          this.pendingAdmin = null;
-          this.toast('Admin felület feloldva.');
-          this.go(target);
-        } else {
-          const panel = document.getElementById('pinPanel');
-          if (panel) { panel.classList.remove('shake'); void panel.offsetWidth; panel.classList.add('shake'); }
-          if (input) input.value = '';
-          this.toast('Helytelen PIN kód!', true);
-        }
-      },
-      lockAdmin: function() {
-        if (CLOUD_ON && window.cloud) window.cloud.signOut();
-        this.adminUnlocked = false;
-        setSessionAdmin(false);
-        this.toast('Admin felület lezárva.');
-        this.go('home');
-      },
-
-      openModal: function(html) {
-        document.getElementById('modalSlot').innerHTML = `
-          <div class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-md p-4" onclick="if(event.target===this) app.closeModal()">
-            <div class="modal-in w-full sm:max-w-md">${html}</div>
-          </div>`;
-        const first = document.querySelector('#modalSlot input:not([type=hidden])');
-        if (first) setTimeout(() => first.focus(), 80);
-      },
-      closeModal: function() { document.getElementById('modalSlot').innerHTML = ''; this._askResolve = null; },
-      ask: function(title, text, okLabel) {
-        return new Promise((resolve) => {
-          this._askResolve = resolve;
-          this.openModal(`
-            <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-3">
-              <h3 class="font-black text-lg text-white">${esc(title)}</h3>
-              <p class="text-xs text-zinc-400 whitespace-pre-line leading-relaxed">${esc(text)}</p>
-              <div class="flex gap-2 pt-2">
-                <button onclick="app._resolveAsk(false)" class="w-1/2 bg-zinc-900 text-zinc-400 font-bold py-3 rounded-xl text-xs btn-press">Mégse</button>
-                <button onclick="app._resolveAsk(true)" class="w-1/2 bg-white text-black font-black uppercase text-xs py-3 rounded-xl btn-press">${esc(okLabel || 'Igen')}</button>
-              </div>
-            </div>`);
-        });
-      },
-      _resolveAsk: function(v) { const r = this._askResolve; this._askResolve = null; this.closeModal(); if (r) r(v); },
-
-      cloudLoginView: function() {
-        return `
-          <div id="pinPanel" class="max-w-xs mx-auto pt-8 pb-12 text-center space-y-6">
-            <div class="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-2xl mx-auto shadow-inner">🔐</div>
-            <div>
-              <h2 class="text-2xl font-black tracking-tight text-white">Admin Belépés</h2>
-              <p class="text-xs text-zinc-400 mt-1">Jelentkezz be a jogosult Google-fiókoddal.</p>
-            </div>
-            ${this.authMsg ? `<p class="text-xs text-red-400">${esc(this.authMsg)}</p>` : ''}
-            <button onclick="app.tryUnlock()" class="w-full py-3.5 bg-amber-500 text-black font-black uppercase text-xs tracking-wider rounded-2xl btn-press">Belépés Google-fiókkal</button>
-            <button onclick="app.go('home')" class="text-xs text-zinc-500 hover:text-white block mx-auto underline">Vissza a Vendég módhoz</button>
-          </div>`;
-      },
-      openProfileModalCloud: function() {
-        const me = this.me();
-        this.openModal(`
-          <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-3">
-            <div class="flex justify-between items-start">
-              <div>
-                <h3 class="font-black text-xl text-white">Belépés / Regisztráció</h3>
-                <p class="text-xs text-zinc-400">Add meg az email címed. Ha még nem vagy a rendszerben, a nevedet is.</p>
-              </div>
-              <button onclick="app.closeModal()" class="p-2 bg-zinc-900 rounded-full text-zinc-400">✕</button>
-            </div>
-            ${me ? `<div class="text-xs text-emerald-400">Jelenleg: ${esc(me.name)}</div>` : ''}
-            <input id="newProfileEmail" type="email" placeholder="email@pelda.hu" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white" />
-            <input id="newProfileName" type="text" placeholder="Teljes név (csak első alkalommal)" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white" />
-            <button onclick="app.cloudLogin()" class="w-full bg-emerald-500 text-black font-black uppercase tracking-wider text-xs py-3 rounded-xl btn-press">Tovább</button>
-          </div>`);
-      },
-      cloudLogin: function() {
-        const email = document.getElementById('newProfileEmail').value.trim().toLowerCase();
-        const name = document.getElementById('newProfileName').value.trim();
-        if (!email.includes('@')) return this.toast('Érvénytelen email cím!', true);
-        const ex = this.users.find(u => u.email.toLowerCase() === email);
-        if (ex) {
-          this.commit(`Üdv újra, ${ex.name}!`, () => { this.activeEmail = ex.email; });
-          this.closeModal();
-          return;
-        }
-        if (!name) return this.toast('Első alkalommal add meg a neved is!', true);
-        this.commit(`Sikeres regisztráció: ${name}`, () => {
-          this.users.push({ id: 'u_' + Date.now(), name, email, passType: 'none', credits: 0, expirationDate: null });
-          this.activeEmail = email;
-        }, `${name} önállóan regisztrált (vendégoldal).`, 'guest');
-        this.closeModal();
-      },
-      openProfileModal: function() {
-        if (CLOUD_ON) return this.openProfileModalCloud();
-        const active = this.me();
-        this.openModal(`
-          <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 max-h-[85vh] overflow-y-auto space-y-4">
-            <div class="flex justify-between items-start">
-              <div>
-                <h3 class="font-black text-xl text-white">Vendég Profil Váltása</h3>
-                <p class="text-xs text-zinc-400">Válassz egy fiókot a teszteléshez vagy hozz létre újat.</p>
-              </div>
-              <button onclick="app.closeModal()" class="p-2 bg-zinc-900 rounded-full text-zinc-400">✕</button>
-            </div>
-            <div class="space-y-2">
-              ${this.users.map(u => `
-                <button onclick="app.switchProfile(${jsArg(u.email)})" class="w-full text-left bg-black border p-3.5 rounded-2xl flex justify-between items-center transition-all ${active && active.email === u.email ? 'border-emerald-500 bg-emerald-950/20' : 'border-zinc-800 hover:border-zinc-700'}">
-                  <div class="min-w-0 pr-2">
-                    <span class="font-bold text-white text-sm block truncate">${esc(u.name)}</span>
-                    <span class="text-[11px] text-zinc-500 font-mono truncate block">${esc(u.email)}</span>
-                  </div>
-                  <div class="text-right flex-shrink-0">
-                    <span class="text-[11px] font-bold ${this.passActive(u) ? 'text-emerald-400' : 'text-zinc-500'} block">${esc(this.passLabel(u))}</span>
-                    ${u.expirationDate ? `<span class="text-[9px] text-zinc-500 block">Lejár: ${u.expirationDate}</span>` : ''}
-                  </div>
-                </button>`).join('')}
-            </div>
-            <div class="pt-4 border-t border-zinc-900 space-y-2.5">
-              <span class="text-[11px] font-black uppercase text-zinc-500 block">Új Vendég Regisztrációja</span>
-              <input id="newProfileName" type="text" placeholder="Teljes Név" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white" />
-              <input id="newProfileEmail" type="email" placeholder="email@pelda.hu" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white" />
-              <button onclick="app.createGuestFromModal()" class="w-full bg-emerald-500 text-black font-black uppercase tracking-wider text-xs py-3 rounded-xl btn-press">Profil Létrehozása</button>
-            </div>
-          </div>`);
-      },
-      switchProfile: function(email) {
-        const u = this.users.find(x => x.email === email);
-        if (!u) return;
-        this.commit(`Profil kiválasztva: ${u.name}`, () => { this.activeEmail = email; });
-        this.closeModal();
-      },
-      createGuestFromModal: function() {
-        const name = document.getElementById('newProfileName').value.trim();
-        const email = document.getElementById('newProfileEmail').value.trim().toLowerCase();
-        if (!name || !email) return this.toast('Név és email megadása kötelező!', true);
-        if (!email.includes('@')) return this.toast('Érvénytelen email formátum!', true);
-        const existing = this.users.find(u => u.email.toLowerCase() === email);
-        if (existing) {
-          this.activeEmail = existing.email;
-          this.save();
-          this.closeModal();
-          this.render();
-          return this.toast('A profil már létezik, átváltva rá.');
-        }
-        this.commit(`Sikeres regisztráció: ${name}`, () => {
-          this.users.push({ id: 'u_' + Date.now(), name, email, passType: 'none', credits: 0, expirationDate: null });
-          this.activeEmail = email;
-        }, `${name} önállóan regisztrált (vendégoldal).`, 'guest');
-        this.closeModal();
-      },
-
-      bookClass: function(classId) {
-        const cls = this.classes.find(c => c.id === classId);
-        if (!cls) return;
-        const u = this.me();
-        if (!u) { this.openProfileModal(); return this.toast('Válassz ki egy profilt!', true); }
-        if (isPastClass(cls)) return this.toast('Ez az edzés már elkezdődött!', true);
-        if (this.bookings.some(b => b.classId === classId && b.email === u.email)) return this.toast('Már jelentkeztél erre az edzésre!', true);
-        if (this.spotsLeft(cls) <= 0) return this.toast('Sajnos ez a csoport betelt!', true);
-        if (!this.passActive(u)) {
-          return this.toast(u.expirationDate && u.expirationDate < todayStr() ? `A bérleted lejárt (${u.expirationDate})!` : 'Nincs érvényes bérleted az edzéshez!', true);
-        }
-        this.commit('Sikeres edzésfoglalás!', () => {
-          this.bookings.push({ id: 'b_' + Date.now(), classId: cls.id, name: u.name, email: u.email, attendanceStatus: 'PENDING' });
-          if (u.passType !== 'monthly') u.credits = Math.max(0, (u.credits || 0) - 1);
-        }, `${u.name} jelentkezett: ${cls.name} (${cls.date} ${cls.time})`, 'booking');
-      },
-      cancelBooking: function(classId) {
-        const u = this.me();
-        if (!u) return;
-        const cls = this.classes.find(c => c.id === classId);
-        const booking = this.bookings.find(b => b.classId === classId && b.email === u.email);
-        if (!booking) return;
-
-        this.ask('Foglalás lemondása', `${cls ? cls.name : 'Edzés'}\n${cls ? `${cls.date} ${cls.time}` : ''}\n\nBiztosan lemondod? Az alkalom azonnal visszajóváírásra kerül a bérletedre.`, 'Lemondom').then((ok) => {
-          if (!ok) return;
-          const refund = u.passType !== 'monthly';
-          this.commit(refund ? 'Foglalás törölve, 1 alkalom jóváírva.' : 'Foglalás lemondva.', () => {
-            this.bookings = this.bookings.filter(b => b.id !== booking.id);
-            if (refund) { const uu = this.users.find(x => x.email === u.email) || u; uu.credits = (uu.credits || 0) + 1; }
-          }, `${u.name} lemondta: ${cls ? cls.name : ''} (${cls ? cls.date : ''})`, 'cancel');
-        });
-      },
-      goToClass: function(dateStr, classId) {
-        this.selectedDate = dateStr;
-        this.openWodId = classId || null;
-        this.go('schedule');
-      },
-      toggleWod: function(classId) {
-        this.openWodId = this.openWodId === classId ? null : classId;
-        this.render();
-      },
-
-      openEditModal: function(classId) {
-        const cls = this.classes.find(c => c.id === classId);
-        if (!cls) return;
-        this.openModal(`
-          <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-3">
-            <div class="flex justify-between items-start">
-              <div>
-                <h3 class="font-black text-xl text-white">Óra & Edzésterv Módosítása</h3>
-                <p class="text-xs text-zinc-400">${esc(cls.date)} • ${esc(cls.time)}</p>
-              </div>
-              <button onclick="app.closeModal()" class="p-2 bg-zinc-900 rounded-full text-zinc-400">✕</button>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="text-[10px] font-bold text-zinc-500 uppercase block mb-1">Időpont</label>
-                <input id="editTime" type="time" value="${esc(cls.time)}" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white" />
-              </div>
-              <div>
-                <label class="text-[10px] font-bold text-zinc-500 uppercase block mb-1">Kapacitás (fő)</label>
-                <input id="editCap" type="number" min="1" value="${cls.capacity}" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white" />
-              </div>
-            </div>
-            <div>
-              <label class="text-[10px] font-bold text-zinc-500 uppercase block mb-1">Óra Típusa</label>
-              <select id="editName" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white">
-                ${CLASS_TYPES.map(t => `<option ${cls.name === t ? 'selected' : ''}>${t}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <label class="text-[10px] font-bold text-zinc-500 uppercase block mb-1">Napi Edzésterv / WOD</label>
-              <textarea id="editWod" class="w-full bg-black border border-zinc-800 rounded-xl p-3 text-xs text-white font-mono h-32 leading-relaxed" placeholder="Írd ide a feladatokat... Futásnál: 5x1km @5k (@2k, @5k, @T, @E)">${esc(cls.workoutPlan || '')}</textarea>
-            </div>
-            <div class="flex gap-2 pt-2">
-              <button onclick="app.closeModal()" class="w-1/3 bg-zinc-900 text-zinc-400 font-bold py-3 rounded-xl text-xs btn-press">Mégse</button>
-              <button onclick="app.saveClassEdit(${jsArg(cls.id)})" class="w-2/3 bg-white text-black font-black uppercase tracking-wider py-3 rounded-xl text-xs btn-press">Mentés</button>
-            </div>
-          </div>`);
-      },
-      saveClassEdit: function(classId) {
-        const time = document.getElementById('editTime').value;
-        const cap = Number(document.getElementById('editCap').value);
-        const name = document.getElementById('editName').value;
-        const wod = document.getElementById('editWod').value;
-        if (!time) return this.toast('Add meg a kezdési időt!', true);
-        if (!cap || cap < 1) return this.toast('A kapacitás minimum 1 fő!', true);
-        this.commit('Óra és edzésterv sikeresen frissítve!', () => {
-          this.classes = this.classes.map(c => c.id === classId ? { ...c, time, capacity: cap, name, workoutPlan: wod } : c);
-        }, `Óra módosítva: ${name} (${time})`, 'class');
-        this.closeModal();
-      },
-      addClass: function() {
-        const time = document.getElementById('inTime').value;
-        const cap = Number(document.getElementById('inCap').value);
-        const name = document.getElementById('inName').value;
-        const wod = document.getElementById('inWod').value;
-        if (!time) return this.toast('Kérlek adj meg kezdési időpontot!', true);
-        if (!cap || cap < 1) return this.toast('Kérlek adj meg legalább 1 fős keretet!', true);
-        this.commit('Új óra felvéve a naptárba!', () => {
-          this.classes.push({ id: 'c_' + Date.now(), date: this.selectedDate, time, name, capacity: cap, workoutPlan: wod });
-        }, `Új óra kiírva: ${name} (${this.selectedDate} ${time})`, 'class');
-      },
-      deleteClass: async function(classId) {
-        const cls = this.classes.find(c => c.id === classId);
-        if (!cls) return;
-        const bookingsCount = this.bookingsFor(classId).length;
-        const ok = await this.ask('Óra törlése', `${cls.date} ${cls.time} – ${cls.name}\n\nBiztosan törlöd? ${bookingsCount} foglalás törlődik, és a kreditek automatikusan visszakerülnek a tagoknak.`, 'Törlés');
-        if (!ok) return;
-        this.commit('Óra törölve, kreditek jóváírva.', () => {
-          this.bookingsFor(classId).forEach(b => {
-            const u = this.users.find(x => x.email === b.email);
-            if (u && u.passType !== 'monthly') u.credits = (u.credits || 0) + 1;
-          });
-          this.classes = this.classes.filter(c => c.id !== classId);
-          this.bookings = this.bookings.filter(b => b.classId !== classId);
-        }, `Óra törölve: ${cls.name} (${cls.date} ${cls.time})`, 'cancel');
-      },
-
-      addTransaction: function() {
-        const type = document.getElementById('txType').value;
-        const cat = document.getElementById('txCat').value.trim();
-        const amount = Number(document.getElementById('txAmount').value);
-        const name = document.getElementById('txName').value.trim();
-        if (!cat || !name) return this.toast('Tölts ki minden mezőt!', true);
-        if (!amount || amount <= 0) return this.toast('Valós összeget adj meg!', true);
-        this.commit('Tranzakció rögzítve!', () => {
-          this.transactions.unshift({
-            id: 't_' + Date.now(), date: todayHu(), type, category: cat, amount,
-            customerName: name, invoiceStatus: type === 'INCOME' ? 'PENDING' : 'ISSUED'
-          });
-        }, `${type === 'INCOME' ? 'Bevétel' : 'Kiadás'}: ${cat} – ${formatFt(amount)} (${name})`, 'finance');
-      },
-      toggleInvoice: function(id) {
-        const t = this.transactions.find(x => x.id === id);
-        this.commit('Számla státusz frissítve.', () => {
-          this.transactions = this.transactions.map(x => x.id === id ? { ...x, invoiceStatus: x.invoiceStatus === 'PENDING' ? 'ISSUED' : 'PENDING' } : x);
-        }, t ? `Számla státusz váltás: ${t.category}` : null, 'finance');
-      },
-
-      assignPass: function(email, passId) {
-        const p = PASS_TYPES.find(x => x.id === passId);
-        const user = this.users.find(u => u.email === email);
-        if (!p || !user) return;
-        const base = (user.expirationDate && user.expirationDate >= todayStr()) ? new Date(user.expirationDate + 'T12:00:00') : new Date();
-        base.setDate(base.getDate() + 30);
-        const expStr = toLocalISO(base);
-
-        this.commit(`${p.name} aktiválva (${user.name})!`, () => {
-          this.users = this.users.map(u => u.email === email ? {
-            ...u,
-            passType: p.monthly ? 'monthly' : 'ticket',
-            credits: (!p.monthly && u.passType === 'ticket') ? (u.credits || 0) + p.credits : p.credits,
-            expirationDate: expStr
-          } : u);
-          this.transactions.unshift({
-            id: 't_' + Date.now(), date: todayHu(), type: 'INCOME', category: p.name,
-            amount: p.price, customerName: user.name, invoiceStatus: 'PENDING'
-          });
-        }, `${user.name} számára kiadva: ${p.name}`, 'pass');
-      },
-      extendPass: function(email) {
-        const user = this.users.find(u => u.email === email);
-        if (!user) return;
-        this.commit('+7 nap érvényesség hozzáadva!', () => {
-          this.users = this.users.map(u => {
-            if (u.email !== email) return u;
-            const d = u.expirationDate ? new Date(u.expirationDate + 'T12:00:00') : new Date();
-            d.setDate(d.getDate() + 7);
-            return { ...u, expirationDate: toLocalISO(d) };
-          });
-        }, `${user.name} bérlete meghosszabbítva +7 nappal.`, 'pass');
-      },
-      addGuestManual: function() {
-        const name = document.getElementById('adminNewName').value.trim();
-        const email = document.getElementById('adminNewEmail').value.trim().toLowerCase();
-        if (!name || !email) return this.toast('Név és email kötelező!', true);
-        if (!email.includes('@')) return this.toast('Érvénytelen email cím!', true);
-        if (this.users.some(u => u.email.toLowerCase() === email)) return this.toast('Ez az email már szerepel a rendszerben!', true);
-        this.commit(`Új vendég felvéve: ${name}`, () => {
-          this.users.push({ id: 'u_' + Date.now(), name, email, passType: 'none', credits: 0, expirationDate: null });
-        }, `Admin felvette a vendéget: ${name} (${email})`, 'guest');
-      },
-      setAttendance: function(bookingId, status) {
-        const b = this.bookings.find(x => x.id === bookingId);
-        if (!b) return;
-        this.commit(status === 'ATTENDED' ? 'Jelenlét rögzítve (Megjelent)' : 'Hiányzás mentve', () => {
-          this.bookings = this.bookings.map(x => x.id === bookingId ? { ...x, attendanceStatus: status } : x);
-        }, `${b.name}: ${status === 'ATTENDED' ? 'megjelent' : 'nem jelent meg'}.`, 'attendance');
-      },
-      resetData: async function() {
-        const ok = await this.ask('Alapadatok visszaállítása', 'Minden eddigi foglalás, óra és tranzakció törlődik, visszaállnak az alapértelmezett bemutató adatok.', 'Visszaállítás');
-        if (!ok) return;
-        try { localStorage.removeItem(STORE_KEY); } catch (e) {}
-        setSessionAdmin(false);
-        location.reload();
-      },
-
-      /* 4. KERET */
-      renderChrome: function() {
-        const pin = this.view === 'pin';
-        const adminView = this.isAdminView() || pin;
-
-        const badge = document.getElementById('roleBadge');
-        badge.innerText = pin ? 'Admin Zárolva' : (adminView ? 'Adminisztrátor' : 'Vendég Mód');
-        badge.className = `px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider text-[10px] ${adminView ? 'bg-amber-500 text-black' : 'bg-emerald-500 text-black'}`;
-
-        document.getElementById('btnGuest').className = `px-3 py-1 rounded-lg font-bold text-xs transition-all ${!adminView ? 'bg-white text-black shadow-md' : 'bg-zinc-800 text-zinc-400 hover:text-white'}`;
-        document.getElementById('btnAdmin').className = `px-3 py-1 rounded-lg font-bold text-xs transition-all ${adminView ? 'bg-amber-500 text-black shadow-md' : 'bg-zinc-800 text-zinc-400 hover:text-white'}`;
-
-        const headerRight = document.getElementById('headerRight');
-        if (pin) {
-          headerRight.innerHTML = '';
-        } else if (adminView) {
-          headerRight.innerHTML = `
-            <button onclick="app.lockAdmin()" title="Admin zárása" class="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 rounded-full px-3 py-1.5 text-[11px] font-bold text-amber-400 hover:text-white btn-press">
-              <span>🔒</span> Kilépés
-            </button>`;
-        } else {
-          const me = this.me();
-          headerRight.innerHTML = `
-            <button onclick="app.openProfileModal()" title="Profil váltása" class="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-full px-3 py-1.5 hover:border-zinc-600 btn-press">
-              <div class="text-right">
-                <span class="text-[11px] font-bold text-white block leading-tight truncate max-w-[110px]">${esc(me ? me.name : 'Profil')}</span>
-                <span class="text-[9px] ${this.passActive(me) ? 'text-emerald-400' : 'text-zinc-500'} block leading-none">${esc(this.passLabel(me))}</span>
-              </div>
-              <div class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]">
-                ${esc(me ? me.name.charAt(0) : '?')}
-              </div>
-            </button>`;
-        }
-
-        const bottomNav = document.getElementById('bottomNav');
-        if (pin) {
-          bottomNav.innerHTML = `<div class="text-center text-xs text-zinc-500 py-1">Biztonsági hitelesítés szükséges</div>`;
-          return;
-        }
-
-        if (adminView) {
-          const items = [
-            { id: 'admin', label: 'Áttekintés', icon: '📊' },
-            { id: 'admin/schedule', label: 'Órák & WOD', icon: '📅' },
-            { id: 'admin/attendance', label: 'Jelenlét', icon: '✅' },
-            { id: 'admin/users', label: 'Vendégek', icon: '👥' },
-            { id: 'admin/financials', label: 'Pénzügy', icon: '💰' }
-          ];
-          bottomNav.innerHTML = `
-            <div class="grid grid-cols-5 gap-1 max-w-md mx-auto">
-              ${items.map(it => {
-                const active = this.view === it.id;
-                return `
-                  <button onclick="app.go('${it.id}')" class="flex flex-col items-center py-1 transition-all ${active ? 'text-amber-400 scale-105' : 'text-zinc-500 hover:text-zinc-300'}">
-                    <span class="text-base">${it.icon}</span>
-                    <span class="text-[9px] font-bold mt-0.5 tracking-tight">${it.label}</span>
-                  </button>`;
-              }).join('')}
-            </div>`;
-        } else {
-          const items = [
-            { id: 'home', label: 'Főoldal', icon: '⚡' },
-            { id: 'schedule', label: 'Órarend', icon: '📅' },
-            { id: 'plan', label: 'Edzésterv', icon: '📋' },
-            { id: 'calc', label: '5/3/1', icon: '🏋️' },
-            { id: 'run', label: 'Futás', icon: '🏃' },
-            { id: 'pass', label: 'Bérletem', icon: '🎟️' }
-          ];
-          bottomNav.innerHTML = `
-            <div class="grid grid-cols-6 gap-0.5 max-w-md mx-auto">
-              ${items.map(it => {
-                const active = this.view === it.id;
-                return `
-                  <button onclick="app.go('${it.id}')" class="flex flex-col items-center py-1 transition-all ${active ? 'text-emerald-400 scale-105' : 'text-zinc-500 hover:text-zinc-300'}">
-                    <span class="text-lg">${it.icon}</span>
-                    <span class="text-[9px] font-bold mt-0.5 tracking-tight">${it.label}</span>
-                  </button>`;
-              }).join('')}
-            </div>`;
-        }
-      },
-
-      render: function() {
-        this.renderChrome();
-        const container = document.getElementById('appContainer');
-        const viewFn = this.views[this.view] || this.views['home'];
-        container.innerHTML = `<div class="view-in">${viewFn.call(this)}</div>`;
-      },
-
-      /* 5. NÉZETEK */
-      views: {
-        'pin': function() {
-          if (CLOUD_ON) return this.cloudLoginView();
-          return `
-            <div id="pinPanel" class="max-w-xs mx-auto pt-8 pb-12 text-center space-y-6">
-              <div class="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-2xl mx-auto shadow-inner">🔐</div>
-              <div>
-                <h2 class="text-2xl font-black tracking-tight text-white">Admin Belépés</h2>
-                <p class="text-xs text-zinc-400 mt-1">Add meg a biztonsági PIN kódot az irányítópulthoz.</p>
-              </div>
-              <div class="space-y-4">
-                <input id="pinInput" type="password" inputmode="numeric" maxlength="6" autofocus placeholder="••••"
-                  onkeydown="if(event.key==='Enter') app.tryUnlock()"
-                  class="w-full text-center tracking-[0.5em] text-3xl font-mono py-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl text-amber-400 focus:outline-none focus:border-amber-500" />
-                <button onclick="app.tryUnlock()" class="w-full py-3.5 bg-amber-500 text-black font-black uppercase text-xs tracking-wider rounded-2xl btn-press">Belépés</button>
-              </div>
-              <div class="pt-4 border-t border-zinc-900">
-                <p class="text-[11px] text-zinc-600 font-mono">Alapértelmezett PIN teszteléshez: <span class="text-zinc-400 font-bold">1234</span></p>
-                <button onclick="app.go('home')" class="text-xs text-zinc-500 hover:text-white mt-3 block mx-auto underline">Vissza a Vendég módhoz</button>
-              </div>
-            </div>`;
-        },
-
-        'home': function() {
-          const me = this.me();
-          const upcoming = this.myUpcoming();
-          const nextBooking = upcoming[0] || null;
-          const todaysClasses = this.classes.filter(c => c.date === todayStr()).sort(byDateTime);
-
-          return `
-            <div class="space-y-5">
-              <div class="bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border ${this.passActive(me) ? 'border-zinc-800' : 'border-red-950/40'} rounded-3xl p-5 shadow-xl relative overflow-hidden">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <span class="text-[10px] font-black uppercase tracking-wider ${this.passActive(me) ? 'text-emerald-400' : 'text-red-400'}">
-                      ${this.passActive(me) ? '● Aktív Tagság' : '● Nincs érvényes bérlet'}
-                    </span>
-                    <h2 class="text-xl font-black text-white mt-0.5">${esc(me ? me.name : 'Vendég')}</h2>
-                  </div>
-                  <button onclick="app.openProfileModal()" class="text-[10px] bg-zinc-800/80 hover:bg-zinc-700 px-2.5 py-1 rounded-lg text-zinc-300 font-bold">Váltás</button>
-                </div>
-                <div class="mt-4 pt-4 border-t border-zinc-900 flex justify-between items-end">
-                  <div>
-                    <span class="text-[10px] text-zinc-500 block">Bérlet egyenleg:</span>
-                    <span class="text-lg font-black text-white">${esc(this.passLabel(me))}</span>
-                  </div>
-                  <div class="text-right">
-                    <span class="text-[10px] text-zinc-500 block">Érvényesség:</span>
-                    <span class="text-xs font-mono font-bold ${me && me.expirationDate ? 'text-zinc-300' : 'text-zinc-600'}">${me && me.expirationDate ? me.expirationDate : 'Nincs lejárati idő'}</span>
-                  </div>
-                </div>
-                ${!this.passActive(me) ? `
-                  <div class="mt-3.5 bg-red-950/20 border border-red-900/40 rounded-xl p-2.5 flex items-center justify-between text-xs">
-                    <span class="text-red-400 text-[11px]">Vegyél fel bérletet az edzésekhez!</span>
-                    <button onclick="app.go('pass')" class="bg-white text-black font-black px-3 py-1 rounded-lg text-[10px] uppercase">Csomagok</button>
-                  </div>` : ''}
-              </div>
-
-              <div>
-                <div class="flex justify-between items-center mb-2 px-1">
-                  <h3 class="text-xs font-black uppercase tracking-wider text-zinc-400">Következő lefoglalt edzésed</h3>
-                  <button onclick="app.go('schedule')" class="text-xs text-emerald-400 font-bold hover:underline">Teljes órarend →</button>
-                </div>
-                ${nextBooking ? `
-                  <div class="bg-zinc-950 border border-emerald-500/40 rounded-2xl p-4 flex justify-between items-center shadow-lg">
-                    <div>
-                      <div class="flex items-center gap-2">
-                        <span class="text-xs font-black px-2 py-0.5 rounded bg-emerald-500 text-black">${esc(nextBooking.cls.time)}</span>
-                        <span class="text-xs text-zinc-400 font-mono">${esc(nextBooking.cls.date)}</span>
-                      </div>
-                      <h4 class="font-black text-base text-white mt-1">${esc(nextBooking.cls.name)}</h4>
-                      <button onclick="app.goToClass(${jsArg(nextBooking.cls.date)},${jsArg(nextBooking.cls.id)})" class="text-[11px] text-emerald-400 hover:underline mt-1 block">WOD és részletek megtekintése</button>
-                    </div>
-                    <button onclick="app.cancelBooking(${jsArg(nextBooking.cls.id)})" class="bg-zinc-900 hover:bg-red-950 border border-zinc-800 hover:border-red-800 text-zinc-400 hover:text-red-400 font-bold text-xs px-3 py-2 rounded-xl transition-all btn-press">Lemondás</button>
-                  </div>` : `
-                  <div class="bg-zinc-950 border border-dashed border-zinc-800 rounded-2xl p-5 text-center">
-                    <p class="text-xs text-zinc-500">Jelenleg nincs aktív foglalásod.</p>
-                    <button onclick="app.go('schedule')" class="mt-2.5 inline-block bg-white text-black font-black text-xs uppercase px-4 py-2 rounded-xl btn-press">Óra kiválasztása</button>
-                  </div>`}
-              </div>
-
-              <div>
-                <h3 class="text-xs font-black uppercase tracking-wider text-zinc-400 mb-2 px-1">Mai edzések (${todayStr()})</h3>
-                <div class="space-y-2">
-                  ${todaysClasses.length === 0 ? `<div class="p-4 bg-zinc-950 border border-zinc-900 rounded-2xl text-center text-xs text-zinc-500">Mára nincs több kiírt óra.</div>` :
-                    todaysClasses.map(cls => {
-                      const isBooked = me && this.bookings.some(b => b.classId === cls.id && b.email === me.email);
-                      const left = this.spotsLeft(cls);
-                      const past = isPastClass(cls);
-                      return `
-                        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-3.5 flex justify-between items-center card-press">
-                          <div>
-                            <div class="flex items-center gap-2">
-                              <span class="font-black text-xs text-white bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">${esc(cls.time)}</span>
-                              <span class="text-[11px] font-bold ${left > 0 ? 'text-zinc-400' : 'text-red-500'}">${left} /${cls.capacity} szabad hely</span>
-                            </div>
-                            <h4 class="font-bold text-sm text-white mt-1">${esc(cls.name)}</h4>
-                          </div>
-                          <div>
-                            ${isBooked ? `
-                              <button onclick="app.cancelBooking(${jsArg(cls.id)})" class="text-xs font-bold bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 px-3 py-1.5 rounded-xl btn-press">Foglalt (X)</button>
-                            ` : past ? `
-                              <span class="text-[11px] text-zinc-600 font-bold px-2 py-1">Lezárult</span>
-                            ` : left <= 0 ? `
-                              <span class="text-[11px] text-red-500 font-bold px-2 py-1">Betelt</span>
-                            ` : `
-                              <button onclick="app.bookClass(${jsArg(cls.id)})" class="text-xs font-black bg-white text-black px-3.5 py-1.5 rounded-xl uppercase btn-press">Foglalás</button>
-                            `}
-                          </div>
-                        </div>`;
-                    }).join('')}
-                </div>
-              </div>
-            </div>`;
-        },
-
-        'schedule': function() {
-          const me = this.me();
-          const dayClasses = this.classes.filter(c => c.date === this.selectedDate).sort(byDateTime);
-
-          return `
-            <div class="space-y-4">
-              <div class="flex gap-2 overflow-x-auto hide-scrollbar py-1">
-                ${this.dates.map(d => {
-                  const isSel = d.dateString === this.selectedDate;
-                  const isToday = d.dateString === todayStr();
-                  return `
-                    <button onclick="app.selectedDate = '${d.dateString}'; app.render();"
-                      class="flex-shrink-0 w-14 py-2.5 rounded-2xl flex flex-col items-center border transition-all ${isSel ? 'bg-white text-black border-white shadow-lg scale-105' : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-700'}">
-                      <span class="text-[9px] font-black uppercase">${esc(d.shortDay)}</span>
-                      <span class="text-sm font-black mt-0.5">${d.dateString.slice(8, 10)}</span>${isToday ? `<span class="w-1.5 h-1.5 rounded-full ${isSel ? 'bg-black' : 'bg-emerald-500'} mt-1"></span>` : `<span class="w-1.5 h-1.5 mt-1"></span>`}
-                    </button>`;
-                }).join('')}
-              </div>
-
-              <div class="flex justify-between items-center px-1">
-                <h3 class="text-xs font-black uppercase tracking-wider text-zinc-400">${esc(this.selectedDate)} órái</h3>
-                <span class="text-xs text-zinc-500 font-bold">${dayClasses.length} edzés meghirdetve</span>
-              </div>
-
-              <div class="space-y-3">
-                ${dayClasses.length === 0 ? `
-                  <div class="p-8 bg-zinc-950 border border-zinc-900 rounded-3xl text-center space-y-2">
-                    <span class="text-2xl">💤</span>
-                    <p class="text-xs text-zinc-400">Erre a napra még nem írtak ki csoportos órát.</p>
-                  </div>` :
-                  dayClasses.map(cls => {
-                    const isBooked = me && this.bookings.some(b => b.classId === cls.id && b.email === me.email);
-                    const left = this.spotsLeft(cls);
-                    const past = isPastClass(cls);
-                    const isOpenWod = this.openWodId === cls.id;
-
-                    return `
-                      <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden card-press">
-                        <div class="p-4">
-                          <div class="flex justify-between items-start">
-                            <div>
-                              <div class="flex items-center gap-2">
-                                <span class="text-xs font-black bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded text-white font-mono">${esc(cls.time)}</span>
-                                <span class="text-[11px] font-bold ${left > 0 ? 'text-zinc-400' : 'text-red-400'}">${left} /${cls.capacity} szabad hely</span>
-                              </div>
-                              <h4 class="font-black text-base text-white mt-1.5">${esc(cls.name)}</h4>
-                            </div>
-                            <div>
-                              ${isBooked ? `
-                                <button onclick="app.cancelBooking(${jsArg(cls.id)})" class="text-xs font-bold bg-emerald-950 border border-emerald-500/50 text-emerald-400 px-3 py-1.5 rounded-xl btn-press">✓ Lefoglalva</button>
-                              ` : past ? `
-                                <span class="text-xs text-zinc-600 font-bold px-2 py-1">Lezárult</span>
-                              ` : left <= 0 ? `
-                                <span class="text-xs text-red-500 font-bold px-2 py-1">Betelt</span>
-                              ` : `
-                                <button onclick="app.bookClass(${jsArg(cls.id)})" class="text-xs font-black bg-white text-black px-4 py-2 rounded-xl uppercase tracking-wider btn-press">Jelentkezés</button>
-                              `}
-                            </div>
-                          </div>
-                          <div class="mt-3 pt-3 border-t border-zinc-900 flex justify-between items-center">
-                            <button onclick="app.toggleWod(${jsArg(cls.id)})" class="text-[11px] font-bold text-zinc-400 hover:text-white flex items-center gap-1.5">
-                              <span>${isOpenWod ? '▼' : '▶'}</span>
-                              <span>Napi WOD / Edzésterv</span>
-                            </button>
-                            ${cls.workoutPlan ? '<span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Terv feltöltve</span>' : '<span class="text-[10px] text-zinc-600">Nincs terv</span>'}
-                          </div>
-                        </div>
-                        ${isOpenWod ? `
-                          <div class="bg-black/80 border-t border-zinc-900 p-4">
-                            <h5 class="text-[10px] font-black uppercase text-zinc-500 tracking-wider mb-1.5">Edzésterv leírása:</h5>
-                            <div class="text-xs text-zinc-200 font-mono whitespace-pre-line leading-relaxed bg-zinc-900/50 p-3 rounded-xl border border-zinc-800/80">${paceTags(esc(cls.workoutPlan || 'Az edző még nem írta be a napi feladatokat.'))}</div>
-                          </div>` : ''}
-                      </div>`;
-                  }).join('')}
-              </div>
-            </div>`;
-        },
-
-        // --- VENDÉG: HETI EDZÉSTERV NAPRA BONTVA ---
-        'calc': function() { return calcApp.renderBody(); },
-        'run': function() { return runApp.renderBody(); },
-
-        'plan': function() {
-          const off = this.planWeek || 0;
-          const now = new Date();
-          const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7) + off * 7);
-          const names = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'];
-          const days = [];
-          for (let i = 0; i < 7; i++) { const d = new Date(monday); d.setDate(monday.getDate() + i); days.push(d); }
-          const fmt = (d) => `${pad2(d.getMonth() + 1)}.${pad2(d.getDate())}.`;
-          const me = this.me();
-          const weekLabel = off === 0 ? 'Ez a hét' : off === 1 ? 'Jövő hét' : off === -1 ? 'Előző hét' : (off > 0 ? `+${off}. hét` : `${off}. hét`);
-
-          return `
-            <div class="space-y-4">
-              <div class="flex items-center justify-between bg-zinc-950 border border-zinc-800 rounded-2xl p-2">
-                <button onclick="app.planWeek = (app.planWeek || 0) - 1; app.render();" class="px-3 py-2 rounded-xl bg-zinc-900 text-zinc-300 font-bold text-xs btn-press">←</button>
-                <div class="text-center">
-                  <span class="text-xs font-black uppercase tracking-wider text-white block">${weekLabel}</span>
-                  <span class="text-[10px] text-zinc-500 font-mono">${fmt(days[0])} – ${fmt(days[6])}</span>
-                </div>
-                <button onclick="app.planWeek = (app.planWeek || 0) + 1; app.render();" class="px-3 py-2 rounded-xl bg-zinc-900 text-zinc-300 font-bold text-xs btn-press">→</button>
-              </div>
-              ${off !== 0 ? `<button onclick="app.planWeek = 0; app.render();" class="w-full text-[11px] text-emerald-400 font-bold underline">Vissza erre a hétre</button>` : ''}
-
-              ${days.map((d, i) => {
-                const ds = toLocalISO(d);
-                const isToday = ds === todayStr();
-                const list = this.classes.filter(c => c.date === ds).sort(byDateTime);
-                return `
-                  <div class="space-y-2">
-                    <div class="flex items-center gap-2 px-1">
-                      <h3 class="text-xs font-black uppercase tracking-wider ${isToday ? 'text-emerald-400' : 'text-zinc-400'}">${names[i]}</h3>
-                      <span class="text-[10px] text-zinc-600 font-mono">${fmt(d)}</span>
-                      ${isToday ? '<span class="text-[9px] font-black bg-emerald-500 text-black px-1.5 py-0.5 rounded uppercase">Ma</span>' : ''}
-                    </div>
-                    ${list.length === 0 ? `<div class="p-3 bg-zinc-950 border border-zinc-900 rounded-2xl text-[11px] text-zinc-600">Nincs kiírt óra.</div>` :
-                      list.map(cls => {
-                        const isBooked = me && this.bookings.some(b => b.classId === cls.id && b.email === me.email);
-                        const left = this.spotsLeft(cls);
-                        const past = isPastClass(cls);
-                        return `
-                          <div class="bg-zinc-950 border ${isToday ? 'border-emerald-500/30' : 'border-zinc-800'} rounded-2xl overflow-hidden">
-                            <div class="p-3.5 flex justify-between items-center">
-                              <div>
-                                <div class="flex items-center gap-2">
-                                  <span class="text-xs font-black bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-white font-mono">${esc(cls.time)}</span>
-                                  <span class="text-[11px] font-bold ${left > 0 ? 'text-zinc-400' : 'text-red-400'}">${left} /${cls.capacity} szabad</span>
-                                </div>
-                                <h4 class="font-black text-sm text-white mt-1">${esc(cls.name)}</h4>
-                              </div>
-                              <div>
-                                ${isBooked ? `<button onclick="app.cancelBooking(${jsArg(cls.id)})" class="text-[11px] font-bold bg-emerald-950 border border-emerald-500/50 text-emerald-400 px-2.5 py-1.5 rounded-xl btn-press">✓ Foglalt</button>`
-                                  : past ? `<span class="text-[11px] text-zinc-600 font-bold">Lezárult</span>`
-                                  : left <= 0 ? `<span class="text-[11px] text-red-500 font-bold">Betelt</span>`
-                                  : `<button onclick="app.bookClass(${jsArg(cls.id)})" class="text-[11px] font-black bg-white text-black px-3 py-1.5 rounded-xl uppercase btn-press">Foglalás</button>`}
-                              </div>
-                            </div>
-                            <div class="bg-black/80 border-t border-zinc-900 p-3.5">
-                              <h5 class="text-[10px] font-black uppercase text-zinc-500 tracking-wider mb-1.5">Edzésterv / WOD</h5>
-                              <div class="text-xs text-zinc-200 font-mono whitespace-pre-line leading-relaxed">${cls.workoutPlan ? paceTags(esc(cls.workoutPlan)) : '<span class="text-zinc-600">Az edző még nem töltötte fel.</span>'}</div>
-                            </div>
-                          </div>`;
-                      }).join('')}
-                  </div>`;
-              }).join('')}
-            </div>`;
-        },
-
-        'pass': function() {
-          const me = this.me();
-          const past = this.myPast();
-
-          return `
-            <div class="space-y-5">
-              <div class="bg-gradient-to-br from-zinc-900 to-black border border-zinc-800 rounded-3xl p-5 shadow-2xl space-y-4">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">STRNG Pass tagság</span>
-                    <h3 class="text-xl font-black text-white mt-0.5">${esc(me ? me.name : '')}</h3>
-                  </div>
-                  <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${this.passActive(me) ? 'bg-emerald-500 text-black' : 'bg-red-500/20 text-red-400 border border-red-500/30'}">${this.passActive(me) ? 'Aktív' : 'Inaktív'}</span>
-                </div>
-                <div class="bg-black/60 border border-zinc-800 rounded-2xl p-4 flex justify-between items-center">
-                  <div>
-                    <span class="text-[10px] text-zinc-500 font-bold block uppercase">Egyenleg</span>
-                    <span class="text-xl font-black text-white">${esc(this.passLabel(me))}</span>
-                  </div>
-                  <div class="text-right">
-                    <span class="text-[10px] text-zinc-500 font-bold block uppercase">Érvényes</span>
-                    <span class="text-xs font-mono font-bold ${me && me.expirationDate ? 'text-emerald-400' : 'text-zinc-500'}">${me && me.expirationDate ? me.expirationDate : 'Nincs érvényesség'}</span>
-                  </div>
-                </div>
-                <div class="text-[10px] text-zinc-500 flex justify-between items-center px-1 font-mono">
-                  <span>ID: ${esc(me ? me.id : 'N/A')}</span>
-                  <span>Készült: STRNG Rendszer</span>
-                </div>
-              </div>
-
-              <div>
-                <h4 class="text-xs font-black uppercase tracking-wider text-zinc-400 mb-2 px-1">Teremi bérletárak</h4>
-                <div class="space-y-2">
-                  ${PASS_TYPES.map(p => `
-                    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-3.5 flex justify-between items-center">
-                      <div>
-                        <span class="font-bold text-xs text-white block">${esc(p.name)}</span>
-                        <span class="text-[10px] text-zinc-500">${p.monthly ? 'Korlátlan belépés 30 napig' : `${p.credits} alkalom • Érvényes 30 napig`}</span>
-                      </div>
-                      <div class="text-right">
-                        <span class="text-xs font-black text-white block">${formatFt(p.price)}</span>
-                        <span class="text-[9px] text-zinc-500">Recepción fizetendő</span>
-                      </div>
-                    </div>`).join('')}
-                </div>
-              </div>
-
-              <div>
-                <h4 class="text-xs font-black uppercase tracking-wider text-zinc-400 mb-2 px-1">Látogatási előzményeid (${past.length})</h4>
-                <div class="space-y-2">
-                  ${past.length === 0 ? `<div class="p-4 bg-zinc-950 border border-zinc-900 rounded-2xl text-center text-xs text-zinc-500">Még nincs rögzített látogatási előzményed.</div>` :
-                    past.slice(0, 5).map(item => `
-                      <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex justify-between items-center text-xs">
-                        <div>
-                          <span class="font-bold text-white block">${esc(item.cls.name)}</span>
-                          <span class="text-[10px] text-zinc-500">${esc(item.cls.date)} • ${esc(item.cls.time)}</span>
-                        </div>
-                        <span class="text-[10px] font-bold ${item.b.attendanceStatus === 'ATTENDED' ? 'text-emerald-400' : 'text-zinc-500'}">${item.b.attendanceStatus === 'ATTENDED' ? 'Megjelent' : 'Lezajlott'}</span>
-                      </div>`).join('')}
-                </div>
-              </div>
-            </div>`;
-        },
-
-        'admin': function() {
-          const fin = this.finance();
-          const todaysClasses = this.classes.filter(c => c.date === todayStr());
-          const totalBookingsToday = todaysClasses.reduce((acc, c) => acc + this.bookingsFor(c.id).length, 0);
-
-          return `
-            <div class="space-y-5">
-              <div class="grid grid-cols-2 gap-2.5">
-                <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl">
-                  <span class="text-[10px] font-black uppercase text-zinc-500 block">Mai Bevételek</span>
-                  <span class="text-lg font-black text-emerald-400 mt-1 block">${formatFt(fin.todayInc)}</span>
-                </div>
-                <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl">
-                  <span class="text-[10px] font-black uppercase text-zinc-500 block">Mai Órafoglalások</span>
-                  <span class="text-lg font-black text-white mt-1 block">${totalBookingsToday} fő</span>
-                </div>
-                <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl">
-                  <span class="text-[10px] font-black uppercase text-zinc-500 block">Nettó Egyenleg</span>
-                  <span class="text-lg font-black ${fin.net >= 0 ? 'text-white' : 'text-red-400'} mt-1 block">${formatFt(fin.net)}</span>
-                </div>
-                <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl">
-                  <span class="text-[10px] font-black uppercase text-zinc-500 block">Függő Számlák</span>
-                  <span class="text-lg font-black ${fin.pending > 0 ? 'text-amber-400' : 'text-zinc-500'} mt-1 block">${fin.pending} db</span>
-                </div>
-              </div>
-
-              <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-4 space-y-3">
-                <span class="text-xs font-black uppercase tracking-wider text-zinc-400 block">Gyors Műveletek</span>
-                <div class="grid grid-cols-3 gap-2">
-                  <button onclick="app.go('admin/schedule')" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 p-3 rounded-xl text-center btn-press">
-                    <span class="text-xl block mb-1">📅</span><span class="text-[10px] font-bold text-white block">Új Óra</span>
-                  </button>
-                  <button onclick="app.go('admin/attendance')" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 p-3 rounded-xl text-center btn-press">
-                    <span class="text-xl block mb-1">✅</span><span class="text-[10px] font-bold text-white block">Jelenlét</span>
-                  </button>
-                  <button onclick="app.go('admin/users')" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 p-3 rounded-xl text-center btn-press">
-                    <span class="text-xl block mb-1">🎟️</span><span class="text-[10px] font-bold text-white block">Bérletadás</span>
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <h4 class="text-xs font-black uppercase tracking-wider text-zinc-400 mb-2 px-1">Legutóbbi Rendszertevékenységek</h4>
-                <div class="space-y-2">
-                  ${this.activity.length === 0 ? `<div class="p-4 bg-zinc-950 border border-zinc-900 rounded-2xl text-center text-xs text-zinc-500">Még nincs rögzített esemény.</div>` :
-                    this.activity.slice(0, 6).map(act => `
-                      <div class="bg-zinc-950 border border-zinc-800/80 rounded-xl p-3 flex justify-between items-center text-xs">
-                        <div class="pr-2">
-                          <span class="text-white block font-medium">${esc(act.text)}</span>
-                          <span class="text-[9px] text-zinc-500 font-mono">${huStamp(act.at)}</span>
-                        </div>
-                        <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-zinc-900 border border-zinc-800 text-zinc-400">${esc(act.kind)}</span>
-                      </div>`).join('')}
-                </div>
-              </div>
-
-              <div class="pt-2 border-t border-zinc-900 flex justify-between items-center">
-                ${CLOUD_ON ? '<span></span>' : '<button onclick="app.resetData()" class="text-[11px] text-red-500 hover:text-red-400 font-bold">⚠️ Rendszer Alaphelyzetbe</button>'}
-                <button onclick="app.lockAdmin()" class="text-[11px] text-zinc-400 hover:text-white font-bold">Admin Zárolása</button>
-              </div>
-            </div>`;
-        },
-
-        'admin/schedule': function() {
-          const dayClasses = this.classes.filter(c => c.date === this.selectedDate).sort(byDateTime);
-
-          return `
-            <div class="space-y-5">
-              <div class="flex gap-2 overflow-x-auto hide-scrollbar py-1">
-                ${this.dates.map(d => {
-                  const isSel = d.dateString === this.selectedDate;
-                  return `
-                    <button onclick="app.selectedDate = '${d.dateString}'; app.render();"
-                      class="flex-shrink-0 w-12 py-2 rounded-xl flex flex-col items-center border transition-all ${isSel ? 'bg-amber-500 text-black border-amber-500 font-black' : 'bg-zinc-950 text-zinc-400 border-zinc-800'}">
-                      <span class="text-[8px] uppercase">${esc(d.shortDay)}</span>
-                      <span class="text-xs font-bold">${d.dateString.slice(8, 10)}</span>
-                    </button>`;
-                }).join('')}
-              </div>
-
-              <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-4 space-y-3">
-                <span class="text-xs font-black uppercase tracking-wider text-amber-400 block">+ Új Edzés Kiírása (${this.selectedDate})</span>
-                <div class="grid grid-cols-2 gap-2">
-                  <div>
-                    <label class="text-[10px] font-bold text-zinc-500 block mb-1">Időpont</label>
-                    <input id="inTime" type="time" value="17:00" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white" />
-                  </div>
-                  <div>
-                    <label class="text-[10px] font-bold text-zinc-500 block mb-1">Férőhely (fő)</label>
-                    <input id="inCap" type="number" min="1" value="12" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white" />
-                  </div>
-                </div>
-                <div>
-                  <label class="text-[10px] font-bold text-zinc-500 block mb-1">Típus</label>
-                  <select id="inName" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white">
-                    ${CLASS_TYPES.map(t => `<option>${t}</option>`).join('')}
-                  </select>
-                </div>
-                <div>
-                  <label class="text-[10px] font-bold text-zinc-500 block mb-1">Napi WOD / Edzésterv (Opcionális)</label>
-                  <textarea id="inWod" class="w-full bg-black border border-zinc-800 rounded-xl p-2.5 text-xs text-white font-mono h-20" placeholder="Írd ide a napi feladatsort... Futásnál: 5x1km @5k (a vendég saját tempója kiszámolódik: @2k, @5k, @T, @E)"></textarea>
-                </div>
-                <button onclick="app.addClass()" class="w-full py-2.5 bg-white text-black font-black uppercase text-xs rounded-xl tracking-wider btn-press">Óra Meghirdetése</button>
-              </div>
-
-              <div>
-                <h4 class="text-xs font-black uppercase tracking-wider text-zinc-400 mb-2 px-1">Kiírt edzések ezen a napon (${dayClasses.length})</h4>
-                <div class="space-y-3">
-                  ${dayClasses.length === 0 ? `<div class="p-6 bg-zinc-950 border border-zinc-900 rounded-2xl text-center text-xs text-zinc-500">Nincs óra rögzítve.</div>` :
-                    dayClasses.map(cls => {
-                      const bookings = this.bookingsFor(cls.id);
-                      return `
-                        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 space-y-3">
-                          <div class="flex justify-between items-start">
-                            <div>
-                              <div class="flex items-center gap-2">
-                                <span class="text-xs font-black bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded text-amber-400 font-mono">${esc(cls.time)}</span>
-                                <span class="text-xs font-bold text-white">${esc(cls.name)}</span>
-                              </div>
-                              <span class="text-[11px] text-zinc-400 block mt-1">Létszám: ${bookings.length} /${cls.capacity} fő</span>
-                            </div>
-                            <div class="flex gap-1.5">
-                              <button onclick="app.openEditModal(${jsArg(cls.id)})" class="text-xs bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 px-2.5 py-1.5 rounded-lg text-white font-bold btn-press">Szerkesztés</button>
-                              <button onclick="app.deleteClass(${jsArg(cls.id)})" class="text-xs bg-red-950/40 hover:bg-red-900/60 border border-red-900/60 px-2.5 py-1.5 rounded-lg text-red-400 font-bold btn-press">Törlés</button>
-                            </div>
-                          </div>
-                          ${bookings.length > 0 ? `
-                            <div class="bg-black/60 rounded-xl p-2.5 border border-zinc-900">
-                              <span class="text-[9px] font-black uppercase text-zinc-500 block mb-1">Bejelentkezett tagok:</span>
-                              <div class="flex flex-wrap gap-1.5">
-                                ${bookings.map(b => `<span class="text-[10px] bg-zinc-900 text-zinc-300 px-2 py-0.5 rounded-md font-medium border border-zinc-800">${esc(b.name)}</span>`).join('')}
-                              </div>
-                            </div>` : ''}
-                        </div>`;
-                    }).join('')}
-                </div>
-              </div>
-            </div>`;
-        },
-
-        'admin/attendance': function() {
-          const dayClasses = this.classes.filter(c => c.date === this.selectedDate).sort(byDateTime);
-
-          return `
-            <div class="space-y-4">
-              <div class="flex gap-2 overflow-x-auto hide-scrollbar py-1">
-                ${this.dates.map(d => {
-                  const isSel = d.dateString === this.selectedDate;
-                  return `
-                    <button onclick="app.selectedDate = '${d.dateString}'; app.render();"
-                      class="flex-shrink-0 w-12 py-2 rounded-xl flex flex-col items-center border transition-all ${isSel ? 'bg-amber-500 text-black border-amber-500 font-black' : 'bg-zinc-950 text-zinc-400 border-zinc-800'}">
-                      <span class="text-[8px] uppercase">${esc(d.shortDay)}</span>
-                      <span class="text-xs font-bold">${d.dateString.slice(8, 10)}</span>
-                    </button>`;
-                }).join('')}
-              </div>
-
-              <div class="flex justify-between items-center px-1">
-                <h3 class="text-xs font-black uppercase tracking-wider text-zinc-400">Jelenléti Ív • ${this.selectedDate}</h3>
-                <span class="text-[11px] text-zinc-500">${dayClasses.length} óra ezen a napon</span>
-              </div>
-
-              <div class="space-y-4">
-                ${dayClasses.length === 0 ? `<div class="p-6 bg-zinc-950 border border-zinc-900 rounded-2xl text-center text-xs text-zinc-500">Ezen a napon nincsenek órák.</div>` :
-                  dayClasses.map(cls => {
-                    const bookings = this.bookingsFor(cls.id);
-                    return `
-                      <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 space-y-3">
-                        <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                          <div>
-                            <span class="text-xs font-black text-amber-400 font-mono">${esc(cls.time)}</span>
-                            <span class="text-xs font-black text-white ml-1.5">${esc(cls.name)}</span>
-                          </div>
-                          <span class="text-[10px] font-bold text-zinc-400">${bookings.length} /${cls.capacity} regisztrált</span>
-                        </div>
-                        ${bookings.length === 0 ? `<p class="text-[11px] text-zinc-600 italic">Még senki sem jelentkezett erre az órára.</p>` :
-                          `<div class="space-y-2">
-                            ${bookings.map(b => `
-                              <div class="flex justify-between items-center bg-black/50 border border-zinc-900 p-2.5 rounded-xl text-xs">
-                                <div class="min-w-0 pr-2">
-                                  <span class="font-bold text-white block truncate">${esc(b.name)}</span>
-                                  <span class="text-[10px] text-zinc-500 font-mono truncate block">${esc(b.email)}</span>
-                                </div>
-                                <div class="flex items-center gap-1.5 flex-shrink-0">
-                                  <button onclick="app.setAttendance(${jsArg(b.id)}, 'ATTENDED')"
-                                    class="px-2.5 py-1 rounded-lg font-black text-[10px] transition-all btn-press ${b.attendanceStatus === 'ATTENDED' ? 'bg-emerald-500 text-black' : 'bg-zinc-900 text-zinc-400 hover:text-white'}">✓ Megjelent</button>
-                                  <button onclick="app.setAttendance(${jsArg(b.id)}, 'MISSED')"
-                                    class="px-2.5 py-1 rounded-lg font-black text-[10px] transition-all btn-press ${b.attendanceStatus === 'MISSED' ? 'bg-red-500 text-white' : 'bg-zinc-900 text-zinc-400 hover:text-white'}">✕ Hiányzott</button>
-                                </div>
-                              </div>`).join('')}
-                          </div>`}
-                      </div>`;
-                  }).join('')}
-              </div>
-            </div>`;
-        },
-
-        'admin/users': function() {
-          const term = (this.userSearchTerm || '').toLowerCase();
-          const filteredUsers = this.users.filter(u => u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term));
-
-          return `
-            <div class="space-y-5">
-              <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-4 space-y-3">
-                <span class="text-xs font-black uppercase tracking-wider text-amber-400 block">+ Új Vendég Rögzítése</span>
-                <div class="grid grid-cols-2 gap-2">
-                  <input id="adminNewName" type="text" placeholder="Teljes Név" class="bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white" />
-                  <input id="adminNewEmail" type="email" placeholder="Email Cím" class="bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white" />
-                </div>
-                <button onclick="app.addGuestManual()" class="w-full py-2.5 bg-white text-black font-black uppercase text-xs rounded-xl tracking-wider btn-press">Vendég Hozzáadása</button>
-              </div>
-
-              <div class="space-y-3">
-                <div class="flex justify-between items-center px-1">
-                  <h4 class="text-xs font-black uppercase tracking-wider text-zinc-400">Regisztrált Tagok (${this.users.length})</h4>
-                </div>
-                <input id="userSearch" type="text" value="${esc(this.userSearchTerm || '')}" placeholder="Keresés névre vagy emailre..."
-                  oninput="app.userSearchTerm = this.value; app.renderKeepFocus('userSearch');"
-                  class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-700" />
-
-                <div class="space-y-3">
-                  ${filteredUsers.map(u => `
-                    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 space-y-3">
-                      <div class="flex justify-between items-start">
-                        <div>
-                          <h5 class="font-black text-sm text-white">${esc(u.name)}</h5>
-                          <span class="text-[11px] text-zinc-500 font-mono block">${esc(u.email)}</span>
-                        </div>
-                        <div class="text-right">
-                          <span class="text-xs font-bold ${this.passActive(u) ? 'text-emerald-400' : 'text-zinc-500'} block">${esc(this.passLabel(u))}</span>
-                          <span class="text-[10px] text-zinc-500 font-mono block">Lejárat: ${u.expirationDate || 'N/A'}</span>
-                          ${u.run && (u.run.t2 || u.run.t5) ? `<span class="text-[10px] text-emerald-400 font-mono block">🏃 ${u.run.t2 ? '2km ' + RUN.fmt(u.run.t2) : ''}${u.run.t2 && u.run.t5 ? ' • ' : ''}${u.run.t5 ? '5km ' + RUN.fmt(u.run.t5) : ''}</span>` : ''}
-                        </div>
-                      </div>
-                      <div class="pt-2 border-t border-zinc-900 flex items-center justify-between gap-2">
-                        <select id="selPass_${esc(u.id)}" class="bg-black border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-zinc-300 flex-1">
-                          ${PASS_TYPES.map(p => `<option value="${p.id}">${p.short} - ${formatFt(p.price)}</option>`).join('')}
-                        </select>
-                        <button onclick="app.assignPass(${jsArg(u.email)}, document.getElementById(${jsArg('selPass_' + u.id)}).value)" class="bg-amber-500 text-black font-black text-[10px] uppercase px-3 py-1.5 rounded-lg btn-press">Kiadás</button>
-                        <button onclick="app.extendPass(${jsArg(u.email)})" title="Érvényesség hosszabbítása +7 nappal" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-bold text-[10px] px-2.5 py-1.5 rounded-lg btn-press">+7 nap</button>
-                      </div>
-                    </div>`).join('')}
-                </div>
-              </div>
-            </div>`;
-        },
-
-        'admin/financials': function() {
-          const fin = this.finance();
-
-          return `
-            <div class="space-y-5">
-              <div class="bg-gradient-to-br from-zinc-900 to-black border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-4">
-                <span class="text-[10px] font-black uppercase tracking-wider text-amber-400 block">Pénzügyi Mérleg</span>
-                <div class="grid grid-cols-3 gap-2 text-center">
-                  <div><span class="text-[9px] text-zinc-500 uppercase block">Bevétel</span><span class="text-xs font-black text-emerald-400">${formatFt(fin.income)}</span></div>
-                  <div><span class="text-[9px] text-zinc-500 uppercase block">Kiadás</span><span class="text-xs font-black text-red-400">${formatFt(fin.expense)}</span></div>
-                  <div><span class="text-[9px] text-zinc-500 uppercase block">Egyenleg</span><span class="text-xs font-black ${fin.net >= 0 ? 'text-white' : 'text-red-400'}">${formatFt(fin.net)}</span></div>
-                </div>
-              </div>
-
-              <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-4 space-y-3">
-                <span class="text-xs font-black uppercase tracking-wider text-amber-400 block">+ Pénzügyi Tétel Rögzítése</span>
-                <div class="grid grid-cols-2 gap-2">
-                  <div>
-                    <label class="text-[10px] font-bold text-zinc-500 block mb-1">Típus</label>
-                    <select id="txType" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white">
-                      <option value="INCOME">Bevétel (+)</option>
-                      <option value="EXPENSE">Kiadás (-)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="text-[10px] font-bold text-zinc-500 block mb-1">Összeg (Ft)</label>
-                    <input id="txAmount" type="number" inputmode="numeric" placeholder="pl. 14900" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white" />
-                  </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                  <div>
-                    <label class="text-[10px] font-bold text-zinc-500 block mb-1">Kategória</label>
-                    <input id="txCat" type="text" placeholder="pl. Eszközvásárlás, Bérlet" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white" />
-                  </div>
-                  <div>
-                    <label class="text-[10px] font-bold text-zinc-500 block mb-1">Ügyfél / Partner</label>
-                    <input id="txName" type="text" placeholder="pl. Kovács Anna" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white" />
-                  </div>
-                </div>
-                <button onclick="app.addTransaction()" class="w-full py-2.5 bg-white text-black font-black uppercase text-xs rounded-xl tracking-wider btn-press">Rögzítés a Főkönyvbe</button>
-              </div>
-
-              <div>
-                <h4 class="text-xs font-black uppercase tracking-wider text-zinc-400 mb-2 px-1">Legutóbbi Tranzakciók (${this.transactions.length})</h4>
-                <div class="space-y-2">
-                  ${this.transactions.length === 0 ? `<div class="p-6 bg-zinc-950 border border-zinc-900 rounded-2xl text-center text-xs text-zinc-500">Még nincs rögzített tranzakció.</div>` :
-                    this.transactions.map(t => {
-                      const isInc = t.type === 'INCOME';
-                      return `
-                        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-3.5 flex justify-between items-center text-xs">
-                          <div>
-                            <div class="flex items-center gap-1.5">
-                              <span class="font-bold text-white">${esc(t.category)}</span>
-                              <span class="text-[9px] text-zinc-500 font-mono">${esc(t.date)}</span>
-                            </div>
-                            <span class="text-[10px] text-zinc-400 block">${esc(t.customerName)}</span>
-                          </div>
-                          <div class="text-right">
-                            <span class="font-black ${isInc ? 'text-emerald-400' : 'text-red-400'} block">${isInc ? '+' : '-'}${formatFt(t.amount)}</span>
-                            <button onclick="app.toggleInvoice(${jsArg(t.id)})" class="text-[9px] font-bold uppercase underline ${t.invoiceStatus === 'ISSUED' ? 'text-zinc-500' : 'text-amber-400'}">${t.invoiceStatus === 'ISSUED' ? 'Számlázva' : 'Függőben'}</button>
-                          </div>
-                        </div>`;
-                    }).join('')}
-                </div>
-              </div>
-            </div>`;
-        }
-      },
-
-      /* A keresőmező fókuszát megtartó újrarenderelés */
-      renderKeepFocus: function(id) {
-        const el = document.getElementById(id);
-        const pos = el ? el.selectionStart : null;
-        this.render();
-        const n = document.getElementById(id);
-        if (n) { n.focus(); if (pos !== null) { try { n.setSelectionRange(pos, pos); } catch (e) {} } }
-      }
-    };
-
-    /* 6. INDÍTÁS */
-    window.addEventListener('hashchange', () => app.applyRoute());
-    window.addEventListener('DOMContentLoaded', () => {
-      if (!CLOUD_ON) document.getElementById('demoBanner').classList.remove('hidden');
-      app.applyRoute();
-      if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) navigator.serviceWorker.register('sw.js').catch(() => {});
-    });
-  </script>
-
-  <script>
-    /* =========================================================
-       5/3/1 ERŐEMELŐ KALKULÁTOR (személyes adatok, csak ezen az eszközön tárolva)
-       ========================================================= */
-    const CALC_KEY = 'strng_531_tracker_v1';
-    const ROUND_STEP = 2.5;
-
-    const WENDLER_WEEKS = {
-      1: { name: '1. Hét (3x5)', desc: 'Alapozó hét – Magas volumen',
-        warmup: [ { pct: 0.40, reps: '5' }, { pct: 0.50, reps: '5' }, { pct: 0.60, reps: '3' } ],
-        work: [ { pct: 0.65, reps: '5', amrap: false }, { pct: 0.75, reps: '5', amrap: false }, { pct: 0.85, reps: '5+', amrap: true } ] },
-      2: { name: '2. Hét (3x3)', desc: 'Közepes hét – Emelkedő intenzitás',
-        warmup: [ { pct: 0.40, reps: '5' }, { pct: 0.50, reps: '5' }, { pct: 0.60, reps: '3' } ],
-        work: [ { pct: 0.70, reps: '3', amrap: false }, { pct: 0.80, reps: '3', amrap: false }, { pct: 0.90, reps: '3+', amrap: true } ] },
-      3: { name: '3. Hét (5/3/1)', desc: 'Csúcs hét – Maximális intenzitás',
-        warmup: [ { pct: 0.40, reps: '5' }, { pct: 0.50, reps: '5' }, { pct: 0.60, reps: '3' } ],
-        work: [ { pct: 0.75, reps: '5', amrap: false }, { pct: 0.85, reps: '3', amrap: false }, { pct: 0.95, reps: '1+', amrap: true } ] },
-      4: { name: '4. Hét (Deload)', desc: 'Regenerációs hét – Nincs AMRAP',
-        warmup: [ { pct: 0.40, reps: '5' }, { pct: 0.50, reps: '5' } ],
-        work: [ { pct: 0.40, reps: '5', amrap: false }, { pct: 0.50, reps: '5', amrap: false }, { pct: 0.60, reps: '5', amrap: false } ] }
-    };
-
-    const roundWeight = (w) => Math.round(w / ROUND_STEP) * ROUND_STEP;
-    const calcEpley1RM = (weight, reps) => reps <= 1 ? weight : Math.round(weight * (1 + reps / 30));
-
-    const calcDefault = () => ({
-      cycle: 1, selectedWeek: 1, selectedLift: 'squat', tmPercent: 0.90,
-      lifts: {
-        squat: { id: 'squat', name: 'Guggolás', sub: 'Squat', icon: '🦵', oneRm: 140, tm: 125, isUpper: false },
-        bench: { id: 'bench', name: 'Fekvenyomás', sub: 'Bench Press', icon: '🏋️', oneRm: 100, tm: 90, isUpper: true },
-        deadlift: { id: 'deadlift', name: 'Felhúzás', sub: 'Deadlift', icon: '⚡', oneRm: 170, tm: 152.5, isUpper: false },
-        ohp: { id: 'ohp', name: 'Vállból nyomás', sub: 'Overhead Press', icon: '🎯', oneRm: 65, tm: 57.5, isUpper: true }
-      },
-      history: []
-    });
-
-    const calcLoad = () => {
-      try {
-        const raw = localStorage.getItem(CALC_KEY);
-        if (raw) { const d = JSON.parse(raw); if (d && d.lifts && Array.isArray(d.history)) return d; }
-      } catch (e) {}
-      return calcDefault();
-    };
-
-    const calcApp = {
-      sub: 'workout',
-      data: calcLoad(),
-
-      save: function() { try { localStorage.setItem(CALC_KEY, JSON.stringify(this.data)); } catch (e) {} },
-      toast: function(m) { app.toast(m); },
-      render: function() { app.render(); },
-
-      setLift: function(id) { this.data.selectedLift = id; this.save(); this.render(); },
-      setWeek: function(n) { this.data.selectedWeek = Number(n); this.save(); this.render(); },
-
-      update1RM: function(id, v) {
-        const val = parseFloat(v);
-        if (isNaN(val) || val <= 0) return this.toast('Érvényes súlyt adj meg!');
-        const lift = this.data.lifts[id];
-        lift.oneRm = val;
-        lift.tm = roundWeight(val * this.data.tmPercent);
-        this.save();
-        this.toast(`${lift.name} 1RM frissítve: ${val} kg (TM: ${lift.tm} kg)`);
-        this.render();
-      },
-      updateTM: function(id, v) {
-        const val = parseFloat(v);
-        if (isNaN(val) || val <= 0) return this.toast('Érvényes TM értéket adj meg!');
-        const lift = this.data.lifts[id];
-        lift.tm = roundWeight(val);
-        this.save();
-        this.toast(`${lift.name} TM frissítve: ${lift.tm} kg`);
-        this.render();
-      },
-
-      logWorkout: function() {
-        const lift = this.data.lifts[this.data.selectedLift];
-        const week = this.data.selectedWeek;
-        const rules = WENDLER_WEEKS[week];
-        const amrapRule = rules.work.find(w => w.amrap);
-        const targetWeight = amrapRule ? roundWeight(lift.tm * amrapRule.pct) : roundWeight(lift.tm * 0.60);
-        const inp = document.getElementById('amrapInput');
-        const reps = inp ? parseInt(inp.value, 10) : 0;
-        if (week !== 4 && (isNaN(reps) || reps <= 0)) return this.toast('Írd be, hány ismétlést sikerült teljesíteni!');
-        const est = week === 4 ? lift.oneRm : calcEpley1RM(targetWeight, reps);
-        this.data.history.unshift({
-          id: 'log_' + Date.now(), date: new Date().toLocaleDateString('hu-HU'),
-          cycle: this.data.cycle, week: week, liftId: lift.id, liftName: lift.name,
-          weight: targetWeight, targetReps: amrapRule ? amrapRule.reps : '5',
-          repsDone: week === 4 ? 5 : reps, estimated1RM: est
-        });
-        this.save();
-        this.toast('Edzésnapló elmentve!');
-        this.render();
-      },
-
-      advanceCycle: async function() {
-        const ok = await app.ask('Ciklus lezárása', `Biztosan lezárod a(z) ${this.data.cycle}. ciklust?\nA TM automatikusan nő: +2.5 kg felsőtest, +5 kg alsótest.`, 'Lezárás');
-        if (!ok) return;
-        Object.values(this.data.lifts).forEach(l => {
-          l.tm = roundWeight(l.tm + (l.isUpper ? 2.5 : 5.0));
-          l.oneRm = roundWeight(l.tm / this.data.tmPercent);
-        });
-        this.data.cycle += 1;
-        this.data.selectedWeek = 1;
-        this.save();
-        this.toast(`Új ciklus indítva (#${this.data.cycle})! A súlyok frissültek.`);
-        this.render();
-      },
-
-      clearHistory: async function() {
-        const ok = await app.ask('Napló törlése', 'Törlöd a napló előzményeit?', 'Törlés');
-        if (!ok) return;
-        this.data.history = [];
-        this.save();
-        this.render();
-      },
-
-      openEpleyModal: function() {
-        app.openModal(`
-          <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 w-full space-y-4">
-            <div class="flex justify-between items-start">
-              <div>
-                <h3 class="font-black text-lg text-white">1RM Becslő (Epley)</h3>
-                <p class="text-xs text-zinc-400">Számold ki az 1RM-et egy sikeres szettedből.</p>
-              </div>
-              <button onclick="app.closeModal()" class="text-zinc-500 hover:text-white p-1">✕</button>
-            </div>
-            <div class="space-y-3">
-              <div>
-                <label class="text-[10px] font-bold uppercase text-zinc-500 block mb-1">Mozgatott súly (kg)</label>
-                <input id="calcWeight" type="number" inputmode="decimal" step="0.5" placeholder="pl. 100" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white" />
-              </div>
-              <div>
-                <label class="text-[10px] font-bold uppercase text-zinc-500 block mb-1">Teljesített ismétlésszám</label>
-                <input id="calcReps" type="number" inputmode="numeric" min="1" max="30" placeholder="pl. 5" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white" />
-              </div>
-              <div class="p-3 bg-zinc-900/60 rounded-xl border border-zinc-800 text-center">
-                <span class="text-[10px] text-zinc-500 uppercase block">Becsült 1RM érték:</span>
-                <span id="calcResult" class="text-2xl font-black text-emerald-400">0 kg</span>
-              </div>
-              <div>
-                <label class="text-[10px] font-bold uppercase text-zinc-500 block mb-1">Átvétel ide:</label>
-                <select id="calcTargetLift" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white">
-                  ${Object.values(this.data.lifts).map(l => `<option value="${l.id}">${l.name} (${l.oneRm} kg)</option>`).join('')}
-                </select>
-              </div>
-            </div>
-            <div class="flex gap-2 pt-1">
-              <button onclick="calcApp.computeEpley()" class="w-1/2 bg-zinc-900 border border-zinc-800 text-white font-bold py-2.5 rounded-xl text-xs btn-press">Kiszámol</button>
-              <button onclick="calcApp.applyEpleyResult()" class="w-1/2 bg-emerald-500 text-black font-black uppercase tracking-wider py-2.5 rounded-xl text-xs btn-press">Alkalmaz</button>
-            </div>
-          </div>`);
-        document.getElementById('calcWeight').addEventListener('input', () => this.computeEpley());
-        document.getElementById('calcReps').addEventListener('input', () => this.computeEpley());
-      },
-      computeEpley: function() {
-        const w = parseFloat(document.getElementById('calcWeight').value) || 0;
-        const r = parseInt(document.getElementById('calcReps').value, 10) || 0;
-        document.getElementById('calcResult').innerText = `${calcEpley1RM(w, r)} kg`;
-      },
-      applyEpleyResult: function() {
-        const w = parseFloat(document.getElementById('calcWeight').value) || 0;
-        const r = parseInt(document.getElementById('calcReps').value, 10) || 0;
-        const res = calcEpley1RM(w, r);
-        if (res <= 0) return this.toast('Adj meg valós súlyt és ismétlést!');
-        const target = document.getElementById('calcTargetLift').value;
-        app.closeModal();
-        this.update1RM(target, res);
-      },
-
-      renderBody: function() {
-        const tabs = [ ['workout', '🏋️ Edzés'], ['maxes', '📊 1RM & TM'], ['history', '📜 Napló'] ];
-        return `
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">Wendler 5/3/1</span>
-                <h2 class="text-lg font-black text-white">${this.data.cycle}. Ciklus • ${this.data.selectedWeek}. Hét</h2>
-              </div>
-              <button onclick="calcApp.openEpleyModal()" class="text-[11px] font-bold bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-lg text-zinc-300 btn-press">1RM Kalkulátor</button>
-            </div>
-            <div class="grid grid-cols-3 gap-1.5 bg-zinc-950 p-1.5 rounded-2xl border border-zinc-900">
-              ${tabs.map(t => `<button onclick="calcApp.sub='${t[0]}'; app.render();" class="py-2 rounded-xl text-[11px] font-black btn-press ${this.sub === t[0] ? 'bg-emerald-500 text-black' : 'text-zinc-400'}">${t[1]}</button>`).join('')}
-            </div>
-            ${this.sub === 'maxes' ? this.renderMaxes() : this.sub === 'history' ? this.renderHistory() : this.renderWorkout()}
-          </div>`;
-      },
-
-      renderWorkout: function() {
-        const activeLift = this.data.lifts[this.data.selectedLift];
-        const week = this.data.selectedWeek;
-        const weekData = WENDLER_WEEKS[week];
-        return `
-          <div class="space-y-4">
-            <div class="grid grid-cols-4 gap-1.5 bg-zinc-950 p-1.5 rounded-2xl border border-zinc-900">
-              ${Object.values(this.data.lifts).map(lift => {
-                const isSel = lift.id === this.data.selectedLift;
-                return `<button onclick="calcApp.setLift('${lift.id}')" class="py-2.5 px-1 rounded-xl text-center border transition-all btn-press ${isSel ? 'bg-white text-black border-white shadow-lg' : 'bg-transparent text-zinc-400 border-transparent hover:text-white'}">
-                  <span class="text-base block mb-0.5">${lift.icon}</span>
-                  <span class="text-[10px] font-black uppercase block truncate">${lift.name.split(' ')[0]}</span>
-                </button>`;
-              }).join('')}
-            </div>
-
-            <div class="grid grid-cols-4 gap-2">
-              ${[1, 2, 3, 4].map(n => `<button onclick="calcApp.setWeek(${n})" class="py-2 rounded-xl text-center border font-bold text-xs transition-all btn-press ${n === week ? 'bg-emerald-500 text-black border-emerald-500 font-black' : 'bg-zinc-950 text-zinc-400 border-zinc-800'}">
-                ${n}. Hét<span class="text-[9px] block font-normal opacity-80">${n === 4 ? 'Deload' : n === 3 ? '5/3/1' : n === 2 ? '3x3' : '3x5'}</span>
-              </button>`).join('')}
-            </div>
-
-            <div class="bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border border-zinc-800 rounded-3xl p-4 shadow-xl">
-              <div class="flex justify-between items-start">
-                <div>
-                  <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400">${weekData.name}</span>
-                  <h2 class="text-xl font-black text-white mt-0.5">${activeLift.name}</h2>
-                  <p class="text-xs text-zinc-500">${weekData.desc}</p>
-                </div>
-                <div class="text-right">
-                  <span class="text-[10px] text-zinc-500 block uppercase font-bold">Training Max (90%)</span>
-                  <span class="text-lg font-black text-white">${activeLift.tm} kg</span>
-                  <span class="text-[10px] text-zinc-600 block">1RM: ${activeLift.oneRm} kg</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="space-y-1.5">
-              <span class="text-[10px] font-black uppercase tracking-wider text-zinc-500 px-1 block">Bemelegítés (Warmup)</span>
-              <div class="grid grid-cols-3 gap-2">
-                ${weekData.warmup.map(s => `<div class="bg-zinc-950 border border-zinc-900 rounded-2xl p-2.5 text-center">
-                  <span class="text-[9px] text-zinc-500 uppercase block font-bold">${Math.round(s.pct * 100)}% • ${s.reps} ism.</span>
-                  <span class="text-base font-black text-zinc-300 mt-0.5 block">${roundWeight(activeLift.tm * s.pct)} <span class="text-[10px] font-normal text-zinc-500">kg</span></span>
-                </div>`).join('')}
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400 px-1 block">Fő Munka Szettek (Work Sets)</span>
-              <div class="space-y-2">
-                ${weekData.work.map((s, idx) => {
-                  const weight = roundWeight(activeLift.tm * s.pct);
-                  return `<div class="bg-zinc-950 border ${s.amrap ? 'border-emerald-500/50 bg-emerald-950/10' : 'border-zinc-800'} rounded-2xl p-3.5 flex justify-between items-center">
-                    <div class="flex items-center gap-3">
-                      <span class="w-7 h-7 rounded-full bg-zinc-900 border text-xs font-black flex items-center justify-center ${s.amrap ? 'text-emerald-400 border-emerald-500/40' : 'text-zinc-400 border-zinc-800'}">${idx + 1}</span>
-                      <div>
-                        <div class="flex items-center gap-1.5">
-                          <span class="text-xs font-bold text-white">${Math.round(s.pct * 100)}%</span>${s.amrap ? '<span class="text-[9px] font-black px-1.5 py-0.5 bg-emerald-500 text-black rounded uppercase tracking-wider">AMRAP (+)</span>' : ''}
-                        </div>
-                        <span class="text-[11px] text-zinc-500">${s.reps} előírt ismétlés</span>
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <span class="text-xl font-black ${s.amrap ? 'text-emerald-400' : 'text-white'}">${weight}</span>
-                      <span class="text-xs font-bold text-zinc-500">kg</span>
-                    </div>
-                  </div>`;
-                }).join('')}
-              </div>
-            </div>
-
-            ${week !== 4 ? `
-              <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-4 space-y-3">
-                <div class="flex justify-between items-center">
-                  <span class="text-xs font-black uppercase tracking-wider text-zinc-300">AMRAP (+) Sorozat Rögzítése</span>
-                  <span class="text-[10px] text-emerald-400 font-bold">Cél: min. ${weekData.work[2].reps}</span>
-                </div>
-                <div class="flex gap-2">
-                  <input id="amrapInput" type="number" inputmode="numeric" min="1" max="40" placeholder="Hány ismétlés ment?" class="w-2/3 bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500" />
-                  <button onclick="calcApp.logWorkout()" class="w-1/3 bg-white text-black font-black uppercase text-xs rounded-xl tracking-wider btn-press">Mentés</button>
-                </div>
-                <p class="text-[10px] text-zinc-500 leading-tight">Az utolsó sorozatban végezz annyi szabályos ismétlést, amennyi biztonsággal lehetséges. A rendszer ebből becsüli az 1RM-et.</p>
-              </div>` : `
-              <div class="bg-zinc-950 border border-zinc-900 rounded-2xl p-4 text-center">
-                <span class="text-xs text-zinc-400 block font-bold">Deload / Pihenőhét</span>
-                <p class="text-[11px] text-zinc-600 mt-1">Ezen a héten nem végzünk bukásig tartó szettet. Fókuszálj a sebességre és a regenerációra.</p>
-                <button onclick="calcApp.logWorkout()" class="mt-3 bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold text-xs px-4 py-2 rounded-xl btn-press">Deload edzés befejezve</button>
-              </div>`}
-          </div>`;
-      },
-
-      renderMaxes: function() {
-        return `
-          <div class="space-y-4">
-            <div class="px-1">
-              <h3 class="text-sm font-black uppercase tracking-wider text-white">Főgyakorlatok 1RM &amp; TM</h3>
-              <p class="text-xs text-zinc-500">A Training Max automatikusan az 1RM 90%-a. Írd át a saját értékeidre!</p>
-            </div>
-            <div class="space-y-3">
-              ${Object.values(this.data.lifts).map(lift => `
-                <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 space-y-3">
-                  <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                      <span class="text-2xl">${lift.icon}</span>
-                      <div>
-                        <h4 class="font-black text-base text-white leading-tight">${lift.name}</h4>
-                        <span class="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">${lift.sub}</span>
-                      </div>
-                    </div>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-zinc-900 border border-zinc-800 ${lift.isUpper ? 'text-amber-400' : 'text-blue-400'}">${lift.isUpper ? 'Felsőtest (+2.5kg)' : 'Alsótest (+5kg)'}</span>
-                  </div>
-                  <div class="grid grid-cols-2 gap-3 pt-1 border-t border-zinc-900">
-                    <div>
-                      <label class="text-[9px] font-bold uppercase text-zinc-500 block mb-1">1RM Csúcs (kg)</label>
-                      <input type="number" inputmode="decimal" step="1" value="${lift.oneRm}" onchange="calcApp.update1RM('${lift.id}', this.value)" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-sm font-bold text-white focus:border-emerald-500 focus:outline-none" />
-                    </div>
-                    <div>
-                      <label class="text-[9px] font-bold uppercase text-zinc-500 block mb-1">Training Max (90%)</label>
-                      <input type="number" inputmode="decimal" step="0.5" value="${lift.tm}" onchange="calcApp.updateTM('${lift.id}', this.value)" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-sm font-bold text-emerald-400 focus:border-emerald-500 focus:outline-none" />
-                    </div>
-                  </div>
-                </div>`).join('')}
-            </div>
-            <div class="bg-zinc-950 border border-zinc-900 rounded-2xl p-4 text-xs text-zinc-500 space-y-1.5 leading-relaxed">
-              <span class="text-white font-bold block text-[11px]">Miért használunk Training Maxot (TM)?</span>
-              <p>Jim Wendler 5/3/1 rendszerében a munkasúlyokat nem a 100%-os 1RM-ből, hanem annak 90%-ából számoljuk. Ez biztosítja a stabil fejlődést és csökkenti a sérülésveszélyt.</p>
-            </div>
-            <p class="text-[10px] text-zinc-600 text-center">Az adataid csak ezen az eszközön tárolódnak.</p>
-          </div>`;
-      },
-
-      renderHistory: function() {
-        return `
-          <div class="space-y-5">
-            <div class="bg-gradient-to-br from-zinc-900 to-black border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-3">
-              <div class="flex justify-between items-start">
-                <div>
-                  <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">Jelenlegi Státusz</span>
-                  <h3 class="text-xl font-black text-white mt-0.5">${this.data.cycle}. Ciklus • ${this.data.selectedWeek}. Hét</h3>
-                </div>
-                <span class="text-xs bg-zinc-800 px-3 py-1 rounded-full font-bold text-zinc-300">Wendler 5/3/1</span>
-              </div>
-              <p class="text-xs text-zinc-400 leading-relaxed">Ha végeztél a 4 hetes mikrociklussal (a deload héttel együtt), lépj a következő ciklusba. A rendszer automatikusan hozzáad <strong>2.5 kg-ot</strong> a felsőtesti és <strong>5 kg-ot</strong> az alsótesti gyakorlatokhoz.</p>
-              <button onclick="calcApp.advanceCycle()" class="w-full py-3 bg-emerald-500 text-black font-black uppercase text-xs tracking-wider rounded-xl btn-press">Ciklus Lezárása &amp; Súlyok Növelése →</button>
-            </div>
-
-            <div>
-              <div class="flex justify-between items-center mb-2 px-1">
-                <h4 class="text-xs font-black uppercase tracking-wider text-zinc-400">AMRAP Eredmények (${this.data.history.length})</h4>
-                ${this.data.history.length > 0 ? `<button onclick="calcApp.clearHistory()" class="text-[10px] text-red-500 hover:underline font-bold">Törlés</button>` : ''}
-              </div>
-              <div class="space-y-2">
-                ${this.data.history.length === 0 ? `<div class="p-6 bg-zinc-950 border border-zinc-900 rounded-2xl text-center text-xs text-zinc-500">Még nincs rögzített AMRAP eredményed. Teljesíts egy szettet az Edzés fülön!</div>` :
-                  this.data.history.map(item => `
-                    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-3.5 flex justify-between items-center text-xs">
-                      <div>
-                        <div class="flex items-center gap-2 flex-wrap">
-                          <span class="font-bold text-white text-sm">${esc(item.liftName)}</span>
-                          <span class="text-[10px] bg-zinc-900 text-zinc-400 border border-zinc-800 px-2 py-0.5 rounded font-mono">Ciklus ${esc(item.cycle)} • Hét ${esc(item.week)}</span>
-                        </div>
-                        <span class="text-[11px] text-zinc-400 block mt-0.5">${esc(item.weight)} kg × <strong class="text-emerald-400 text-xs">${esc(item.repsDone)} ismétlés</strong> (Cél: ${esc(item.targetReps)})</span>
-                        <span class="text-[9px] text-zinc-600 font-mono">${esc(item.date)}</span>
-                      </div>
-                      <div class="text-right">
-                        <span class="text-[9px] uppercase font-bold text-zinc-500 block">Becsült 1RM</span>
-                        <span class="text-sm font-black text-white">${esc(item.estimated1RM)} kg</span>
-                      </div>
-                    </div>`).join('')}
-              </div>
-            </div>
-          </div>`;
-      }
-    };
-  </script>
-  <script>
-    /* =========================================================
-       FUTÓPROGRAM – egyéni tempók a legjobb 2 km / 5 km idő alapján
-       ========================================================= */
-    const RUN = {
-      riegel: (t, d1, d2) => t * Math.pow(d2 / d1, 1.06),
-      fmt: (sec) => {
-        sec = Math.round(sec);
-        const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
-        return h ? `${h}:${pad2(m)}:${pad2(s)}` : `${m}:${pad2(s)}`;
-      },
-      pacesFor: (u) => {
-        const r = (u && u.run) || {};
-        if (!r.t2 && !r.t5) return null;
-        let p5 = r.t5 ? r.t5 / 5 : null;
-        let p2 = r.t2 ? r.t2 / 2 : null;
-        if (!p5) p5 = RUN.riegel(r.t2, 2, 5) / 5;
-        if (!p2) p2 = RUN.riegel(r.t5, 5, 2) / 2;
-        return { p5, p2, est5: !r.t5, est2: !r.t2, odd: !!(r.t2 && r.t5 && p2 >= p5),
-                 E: p5 * 1.25, Elo: p5 * 1.20, Ehi: p5 * 1.30, T: p5 * 1.07, '5k': p5, '2k': p2 };
-      },
-      zonePace: (P, z) => z === 'E' ? `${RUN.fmt(P.Elo)}–${RUN.fmt(P.Ehi)}` : RUN.fmt(P[z]),
-      distLabel: (d) => d >= 1000 ? `${String(d / 1000).replace('.', ',')} km` : `${d} m`
-    };
-    const ZONE = {
-      'E':  { label: 'könnyű tempó', color: 'text-sky-400' },
-      'T':  { label: 'tempófutás', color: 'text-amber-400' },
-      '5k': { label: '5 km-es tempó', color: 'text-emerald-400' },
-      '2k': { label: '2 km-es tempó', color: 'text-red-400' }
-    };
-
-    /* Az edző WOD-szövegében használható címkék: @2k, @5k, @T, @E  → a vendég saját tempójára cserélődnek */
-    const paceTags = (html) => {
-      const P = RUN.pacesFor(app.me());
-      return html.replace(/@(2k|5k|T|E)\b/gi, (m, z) => {
-        z = z.length === 1 ? z.toUpperCase() : z.toLowerCase();
-        return `<span class="text-emerald-400 font-bold">@${z}${P ? ' (' + RUN.zonePace(P, z) + '/km)' : ''}</span>`;
-      });
-    };
-
-    const RW = { label: 'Bemelegítés', dist: 1500, zone: 'E' };
-    const RC = { label: 'Levezetés', dist: 1000, zone: 'E' };
-    const rq = (name, ...mid) => ({ kind: 'Minőségi', icon: '⚡', name, segs: [RW, ...mid, RC] });
-    const re = (km) => ({ kind: 'Könnyű', icon: '🌿', name: 'Könnyű futás', segs: [{ label: 'Folyamatos futás', dist: km * 1000, zone: 'E' }] });
-    const rl = (km) => ({ kind: 'Hosszú', icon: '🛣️', name: 'Hosszú futás', segs: [{ label: 'Folyamatos futás', dist: km * 1000, zone: 'E' }] });
-    const rr = (reps, dist, zone, rest) => ({ reps, dist, zone, rest });
-    const rt = (mins) => ({ label: 'Tempófutás', mins, zone: 'T' });
-    const RUN_PLAN = [
-      [rq('5 × 800 m', rr(5, 800, '5k', 90)), re(4), rl(6)],
-      [rq('4 × 1 km', rr(4, 1000, '5k', 120)), re(5), rl(7)],
-      [rq('20 perc tempófutás', rt(20)), re(5), rl(8)],
-      [rq('3 × 1 km (könnyebb hét)', rr(3, 1000, '5k', 120)), re(4), rl(6)],
-      [rq('5 × 1 km', rr(5, 1000, '5k', 120)), re(5), rl(8)],
-      [rq('25 perc tempófutás', rt(25)), re(5), rl(9)],
-      [rq('6 × 800 m', rr(6, 800, '2k', 150)), re(5), rl(8)],
-      [rq('3 × 1 km (frissítő hét)', rr(3, 1000, '5k', 120)), re(4),
-        { kind: 'Teszt', icon: '🏁', name: 'Tesztfutás: 5 km', segs: [RW, { label: 'Maximális tempó, az új időd', dist: 5000, zone: '5k' }, RC] }]
-    ];
-
-    const runApp = {
-      week: (() => { try { return Math.min(8, Math.max(1, Number(localStorage.getItem('strng_run_week')) || 1)); } catch (e) { return 1; } })(),
-      setWeek: function(n) { this.week = n; try { localStorage.setItem('strng_run_week', String(n)); } catch (e) {} app.render(); },
-
-      saveTimes: function() {
-        const me = app.me();
-        if (!me) return app.openProfileModal();
-        const g = (id) => document.getElementById(id).value.trim();
-        const mk = (m, sc, lo, hi, label) => {
-          if (m === '' && sc === '') return { ok: true, v: null };
-          const mm = Number(m || 0), ss = Number(sc || 0);
-          if (isNaN(mm) || isNaN(ss) || mm < 0 || ss < 0 || ss >= 60) return { ok: false, msg: label + ': érvénytelen idő' };
-          const sec = Math.round(mm * 60 + ss);
-          if (sec < lo || sec > hi) return { ok: false, msg: label + ': valószínűtlen idő, ellenőrizd' };
-          return { ok: true, v: sec };
-        };
-        const a = mk(g('runT2m'), g('runT2s'), 300, 1500, '2 km');
-        const b = mk(g('runT5m'), g('runT5s'), 750, 4200, '5 km');
-        if (!a.ok) return app.toast(a.msg, true);
-        if (!b.ok) return app.toast(b.msg, true);
-        app.commit('Futóidők elmentve, a tempók kiszámolva!', () => { me.run = { t2: a.v, t5: b.v }; });
-      },
-
-      seg: function(seg, P) {
-        const z = seg.zone, zi = ZONE[z];
-        const pv = P ? P[z] : null;
-        const pace = P ? RUN.zonePace(P, z) + ' /km' : '';
-        if (seg.reps) {
-          const repSec = P ? seg.dist / 1000 * pv : 0;
-          return {
-            title: `${seg.reps} × ${RUN.distLabel(seg.dist)} @ ${zi.label}`,
-            detail: P ? `${pace} • ${RUN.fmt(repSec)} / ismétlés • pihenő: ${RUN.fmt(seg.rest)} (kocogás/séta)` : `pihenő: ${RUN.fmt(seg.rest)} (kocogás/séta)`,
-            km: seg.reps * seg.dist / 1000,
-            sec: P ? seg.reps * repSec + (seg.reps - 1) * seg.rest : 0, color: zi.color
-          };
-        }
-        let dist = seg.dist;
-        if (seg.mins) dist = P ? seg.mins * 60 / pv * 1000 : 0;
-        const len = seg.mins ? `${seg.mins} perc` : RUN.distLabel(seg.dist);
-        return {
-          title: `${seg.label || 'Futás'}: ${len} @ ${zi.label}`,
-          detail: P ? `${pace}${seg.mins ? ' • ≈ ' + (dist / 1000).toFixed(1).replace('.', ',') + ' km' : ' • ≈ ' + RUN.fmt(dist / 1000 * (z === 'E' ? P.E : pv))}` : '',
-          km: dist / 1000,
-          sec: P ? (seg.mins ? seg.mins * 60 : dist / 1000 * (z === 'E' ? P.E : pv)) : 0, color: zi.color
-        };
-      },
-
-      renderBody: function() {
-        const me = app.me();
-        if (!me) {
-          return `<div class="p-6 bg-zinc-950 border border-zinc-900 rounded-3xl text-center space-y-3">
-            <span class="text-3xl">🏃</span>
-            <p class="text-xs text-zinc-400">A futóprogramhoz lépj be vagy regisztrálj, hogy a tempóid elmentődjenek.</p>
-            <button onclick="app.openProfileModal()" class="bg-white text-black font-black text-xs uppercase px-4 py-2 rounded-xl btn-press">Belépés / Regisztráció</button>
-          </div>`;
-        }
-        const run = me.run || {};
-        const P = RUN.pacesFor(me);
-        const m2 = run.t2 ? Math.floor(run.t2 / 60) : '', s2 = run.t2 ? run.t2 % 60 : '';
-        const m5 = run.t5 ? Math.floor(run.t5 / 60) : '', s5 = run.t5 ? run.t5 % 60 : '';
-        const inp = (id, v, ph) => `<input id="${id}" type="number" inputmode="numeric" min="0" value="${v}" placeholder="${ph}" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2.5 text-sm font-bold text-white text-center focus:outline-none focus:border-emerald-500" />`;
-        const sessions = RUN_PLAN[this.week - 1];
-
-        return `
-          <div class="space-y-4">
-            <div>
-              <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">Egyéni futóprogram</span>
-              <h2 class="text-lg font-black text-white">8 hetes terv a saját tempódra szabva</h2>
-            </div>
-
-            <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-4 space-y-3">
-              <span class="text-xs font-black uppercase tracking-wider text-zinc-300 block">Legjobb időid</span>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="text-[10px] font-bold uppercase text-zinc-500 block mb-1">2 km (perc : mp)</label>
-                  <div class="flex items-center gap-1">${inp('runT2m', m2, 'p')}<span class="text-zinc-500 font-black">:</span>${inp('runT2s', s2, 'mp')}</div>
-                </div>
-                <div>
-                  <label class="text-[10px] font-bold uppercase text-zinc-500 block mb-1">5 km (perc : mp)</label>
-                  <div class="flex items-center gap-1">${inp('runT5m', m5, 'p')}<span class="text-zinc-500 font-black">:</span>${inp('runT5s', s5, 'mp')}</div>
-                </div>
-              </div>
-              <button onclick="runApp.saveTimes()" class="w-full py-2.5 bg-emerald-500 text-black font-black uppercase text-xs tracking-wider rounded-xl btn-press">Mentés &amp; tempók kiszámolása</button>
-              <p class="text-[10px] text-zinc-500 leading-tight">Elég az egyik időt megadni, a másikat becsüljük, de két időből pontosabb a terv. Használj friss, igazi versenyfutás vagy teljes erőbedobású időt.</p>
-            </div>
-
-            ${P ? `
-              <div class="bg-gradient-to-br from-zinc-900 to-black border border-zinc-800 rounded-3xl p-4 space-y-3">
-                <span class="text-xs font-black uppercase tracking-wider text-zinc-300 block">A te tempóid (perc / km)</span>
-                <div class="grid grid-cols-2 gap-2">
-                  ${['E', 'T', '5k', '2k'].map(z => `
-                    <div class="bg-black/60 border border-zinc-900 rounded-2xl p-3 text-center">
-                      <span class="text-[9px] uppercase font-bold text-zinc-500 block">${ZONE[z].label}</span>
-                      <span class="text-lg font-black ${ZONE[z].color}">${RUN.zonePace(P, z)}</span>
-                    </div>`).join('')}
-                </div>
-                ${P.est5 ? '<p class="text-[10px] text-amber-400">Az 5 km-es tempód a 2 km-es időd alapján becsült.</p>' : ''}
-                ${P.est2 ? '<p class="text-[10px] text-amber-400">A 2 km-es tempód az 5 km-es időd alapján becsült.</p>' : ''}
-                ${P.odd ? '<p class="text-[10px] text-red-400">A 2 km-es tempód nem gyorsabb az 5 km-esnél, érdemes ellenőrizni az időket.</p>' : ''}
-              </div>` : `
-              <div class="p-4 bg-zinc-950 border border-dashed border-zinc-800 rounded-2xl text-center text-xs text-zinc-500">Add meg legalább az egyik időd, és megjelennek a személyes tempóid.</div>`}
-
-            <div class="grid grid-cols-8 gap-1">
-              ${[1, 2, 3, 4, 5, 6, 7, 8].map(n => `<button onclick="runApp.setWeek(${n})" class="py-2 rounded-xl text-center border font-black text-xs btn-press ${n === this.week ? 'bg-emerald-500 text-black border-emerald-500' : 'bg-zinc-950 text-zinc-400 border-zinc-800'}">${n}${n === 4 || n === 8 ? '<span class="block text-[8px] font-normal">↓</span>' : '<span class="block text-[8px] font-normal">hét</span>'}</button>`).join('')}
-            </div>
-
-            <div class="space-y-3">
-              ${sessions.map((ses, i) => {
-                const lines = ses.segs.map(sg => this.seg(sg, P));
-                const km = lines.reduce((a, l) => a + l.km, 0);
-                const sec = lines.reduce((a, l) => a + l.sec, 0);
-                return `
-                  <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 space-y-2.5">
-                    <div class="flex justify-between items-start">
-                      <div>
-                        <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400">${i + 1}. nap • ${esc(ses.kind)}</span>
-                        <h4 class="font-black text-white">${ses.icon} ${esc(ses.name)}</h4>
-                      </div>
-                      ${P && km > 0 ? `<div class="text-right text-[10px] text-zinc-500 font-mono">≈ ${km.toFixed(1).replace('.', ',')} km<br>≈ ${Math.round(sec / 60)} perc</div>` : ''}
-                    </div>
-                    ${lines.map(l => `
-                      <div class="bg-black/60 border border-zinc-900 rounded-xl px-3 py-2">
-                        <span class="text-xs text-white font-bold block">${esc(l.title)}</span>
-                        ${l.detail ? `<span class="block text-[11px] ${l.color} font-mono">${esc(l.detail)}</span>` : ''}
-                      </div>`).join('')}
-                  </div>`;
-              }).join('')}
-            </div>
-
-            <p class="text-[10px] text-zinc-600 leading-relaxed">A heti 3 futás mellett a crossfit edzéseket is figyelembe véve érdemes a minőségi napot és a hosszú futást külön napra tenni. A tempók becslések (Riegel-képlet alapján), ha valami túl nehéz, lassíts. A 8. héten tesztfutás van: ha javítottál, írd be az új idődet.</p>
-          </div>`;
-      }
-    };
-  </script>
-  <script type="module">
-    if (CLOUD_ON) {
-      try {
-        const V = '10.14.1';
-        const base = 'https://www.gstatic.com/firebasejs/' + V + '/';
-        const [appMod, fs, au] = await Promise.all([
-          import(base + 'firebase-app.js'),
-          import(base + 'firebase-firestore.js'),
-          import(base + 'firebase-auth.js')
-        ]);
-        const fbApp = appMod.initializeApp(CFG.firebase);
-        const db = fs.getFirestore(fbApp);
-        const auth = au.getAuth(fbApp);
-        const refs = {
-          classes: fs.doc(db, 'pub', 'classes'),
-          members: fs.doc(db, 'pub', 'members'),
-          ledger: fs.doc(db, 'admin', 'ledger')
-        };
-        const loaded = { classes: false, members: false, ledger: false };
-        let ledgerUnsub = null;
-        let prompted = false;
-
-        const busy = () => {
-          const a = document.activeElement;
-          const c = document.getElementById('appContainer');
-          return !!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && c && c.contains(a));
-        };
-        const maybePrompt = () => {
-          if (prompted || !loaded.members) return;
-          if (app.view === 'pin' || app.isAdminView()) return;
-          prompted = true;
-          if (!app.me()) app.openProfileModal();
-        };
-        const refresh = () => { if (!busy()) app.render(); maybePrompt(); };
-
-        const watch = (key, apply) => fs.onSnapshot(refs[key], (snap) => {
-          apply(snap.exists() ? snap.data() : null);
-          loaded[key] = true;
-          refresh();
-        }, (err) => { console.error(key, err); app.toast('Kapcsolódási hiba (' + key + ')', true); });
-
-        watch('classes', (d) => { app.classes = (d && d.classes) || []; });
-        watch('members', (d) => {
-          app.users = (d && d.users) || [];
-          app.bookings = (d && d.bookings) || [];
-          app.activity = (d && d.activity) || [];
-        });
-
-        const startLedger = () => {
-          if (ledgerUnsub) return;
-          ledgerUnsub = fs.onSnapshot(refs.ledger, (snap) => {
-            app.transactions = snap.exists() ? ((snap.data().transactions) || []) : [];
-            loaded.ledger = true;
-            refresh();
-          }, (err) => console.error('ledger', err));
-        };
-        const stopLedger = () => { if (ledgerUnsub) { ledgerUnsub(); ledgerUnsub = null; } loaded.ledger = false; };
-
-        const push = async () => {
-          const writes = [];
-          if (loaded.members) writes.push(fs.setDoc(refs.members, { users: app.users, bookings: app.bookings, activity: app.activity.slice(0, 50) }));
-          if (app.adminUnlocked) {
-            if (loaded.classes) writes.push(fs.setDoc(refs.classes, { classes: app.classes }));
-            if (loaded.ledger) writes.push(fs.setDoc(refs.ledger, { transactions: app.transactions }));
-          }
-          try { await Promise.all(writes); }
-          catch (e) { console.error(e); app.toast('Mentési hiba – ellenőrizd a kapcsolatot és a jogosultságot', true); }
-        };
-
-        const provider = new au.GoogleAuthProvider();
-        const signIn = async () => {
-          try { await au.signInWithPopup(auth, provider); }
-          catch (e) { console.error(e); app.toast('Bejelentkezés sikertelen', true); }
-        };
-        const signOut = () => au.signOut(auth);
-
-        au.onAuthStateChanged(auth, (user) => {
-          const ok = !!(user && user.email && user.emailVerified !== false && ADMIN_EMAILS.indexOf(user.email.toLowerCase()) >= 0);
-          if (ok) {
-            app.authMsg = '';
-            if (!app.adminUnlocked) {
-              app.adminUnlocked = true;
-              startLedger();
-              if (app.view === 'pin') { const t = app.pendingAdmin || 'admin'; app.pendingAdmin = null; app.go(t); }
-              else app.render();
-            }
-          } else {
-            if (user) { app.authMsg = 'Ez a fiók (' + user.email + ') nincs jogosítva az admin felülethez.'; au.signOut(auth); }
-            const was = app.adminUnlocked;
-            app.adminUnlocked = false;
-            stopLedger();
-            app.transactions = [];
-            if (was && app.isAdminView()) app.go('home'); else app.render();
-          }
-        });
-
-        window.cloud = { push, signIn, signOut };
-      } catch (e) {
-        console.error(e);
-        app.toast('Nem sikerült csatlakozni az adatbázishoz', true);
+    // Kezdő dátum beállítása
+    document.getElementById('log-date').valueAsDate = new Date();
+    
+    // Betöltjük a mentett adatokat a kalkulátorokba
+    document.getElementById('rm-sq').value = appData.maxes.sq;
+    document.getElementById('rm-bp').value = appData.maxes.bp;
+    document.getElementById('rm-dl').value = appData.maxes.dl;
+    document.getElementById('rm-ohp').value = appData.maxes.ohp;
+    document.getElementById('run-5k-input').value = appData.run5k;
+
+    // --- TAB NAVIGÁCIÓ ---
+    function switchTab(tabId, title) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      document.querySelector(`[data-target="${tabId}"]`).classList.add('active');
+      document.getElementById('header-title').innerText = title;
+    }
+
+    // --- 1. EDZÉSNAPLÓ FUNKCIÓK ---
+    function saveWorkout() {
+      const date = document.getElementById('log-date').value;
+      const type = document.getElementById('log-type').value;
+      const title = document.getElementById('log-title').value.trim();
+      const details = document.getElementById('log-details').value.trim();
+      const isPR = document.getElementById('log-pr').checked;
+
+      if (!title) return alert("Kérlek adj nevet az edzésnek!");
+
+      appData.logs.unshift({ id: Date.now().toString(), date, type, title, details, isPR });
+      saveAllData();
+
+      document.getElementById('log-title').value = '';
+      document.getElementById('log-details').value = '';
+      document.getElementById('log-pr').checked = false;
+      renderLogs();
+    }
+
+    function deleteWorkout(id) {
+      if(confirm("Biztosan törlöd ezt az edzést?")) {
+        appData.logs = appData.logs.filter(w => w.id !== id);
+        saveAllData();
+        renderLogs();
       }
     }
+
+    function renderLogs() {
+      const container = document.getElementById('logs-container');
+      container.innerHTML = '';
+
+      if (appData.logs.length === 0) {
+        container.innerHTML = '<p class="text-center text-zinc-600 text-xs py-8 italic border border-zinc-800 border-dashed rounded-xl">Még nincs rögzített edzésed.</p>';
+        return;
+      }
+
+      appData.logs.forEach(w => {
+        container.innerHTML += `
+          <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl space-y-2 relative">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">${w.date} &bull; ${w.type}</div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
+                  ${w.title} ${w.isPR ? '<span class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded uppercase">PR</span>' : ''}
+                </h3>
+              </div>
+              <button onclick="deleteWorkout('${w.id}')" class="text-zinc-600 hover:text-red-400 transition p-1 text-xs">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+            ${w.details ? `<p class="text-xs text-zinc-400 whitespace-pre-line leading-relaxed">${w.details}</p>` : ''}
+          </div>
+        `;
+      });
+    }
+
+    // --- 2. 5/3/1 KALKULÁTOR FUNKCIÓK ---
+    function round25(num) { return Math.round(num / 2.5) * 2.5; }
+
+    function calculate531() {
+      const sq = parseFloat(document.getElementById('rm-sq').value) || 0;
+      const bp = parseFloat(document.getElementById('rm-bp').value) || 0;
+      const dl = parseFloat(document.getElementById('rm-dl').value) || 0;
+      const ohp = parseFloat(document.getElementById('rm-ohp').value) || 0;
+
+      appData.maxes = { sq, bp, dl, ohp };
+      saveAllData();
+
+      const lifts = [
+        { name: 'Guggolás', tm: sq * 0.9 },
+        { name: 'Fekvenyomás', tm: bp * 0.9 },
+        { name: 'Felhúzás', tm: dl * 0.9 },
+        { name: 'OHP', tm: ohp * 0.9 }
+      ];
+
+      const weeks = [
+        { title: '1. Hét (3x5)', sets: [[0.65, 5], [0.75, 5], [0.85, '5+']] },
+        { title: '2. Hét (3x3)', sets: [[0.70, 3], [0.80, 3], [0.90, '3+']] },
+        { title: '3. Hét (5/3/1)', sets: [[0.75, 5], [0.85, 3], [0.95, '1+']] },
+        { title: '4. Hét (Deload)', sets: [[0.40, 5], [0.50, 5], [0.60, 5]] }
+      ];
+
+      let html = '';
+      weeks.forEach(week => {
+        html += `<div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl"><h3 class="font-bold text-sm text-emerald-400 mb-3 uppercase tracking-wider">${week.title}</h3>`;
+        lifts.forEach(lift => {
+          if (lift.tm > 0) {
+            let setsHtml = week.sets.map(s => `<span class="bg-zinc-950 px-2 py-1 rounded text-xs font-mono border border-zinc-800">${round25(lift.tm * s[0])}x${s[1]}</span>`).join(' ');
+            html += `<div class="flex justify-between items-center mb-2 last:mb-0 border-b border-zinc-800/50 pb-2 last:border-0"><span class="text-xs font-bold text-white w-1/3">${lift.name}</span><div class="flex gap-1">${setsHtml}</div></div>`;
+          }
+        });
+        html += `</div>`;
+      });
+      document.getElementById('table-531-container').innerHTML = html;
+    }
+
+    // --- 3. FUTÁS KALKULÁTOR FUNKCIÓK ---
+    function formatSecs(secs) {
+      const m = Math.floor(secs / 60);
+      const s = Math.round(secs % 60);
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function calculatePaces() {
+      const input = document.getElementById('run-5k-input').value.trim();
+      appData.run5k = input;
+      saveAllData();
+
+      if (!input.includes(':')) return alert("A formátum MM:SS legyen (pl. 25:00)");
+      
+      const parts = input.split(':');
+      const totalSecs = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+      if (isNaN(totalSecs) || totalSecs <= 0) return;
+
+      const pace5k = totalSecs / 5; // seconds per km
+      const paceT = pace5k + 15;    // Tempo pace (+15s)
+      const paceE = pace5k + 60;    // Easy pace (+60s to 90s)
+
+      document.getElementById('run-results').classList.remove('hidden');
+      document.getElementById('run-results').innerHTML = `
+        <div class="bg-emerald-950/30 border border-emerald-900/50 p-4 rounded-xl flex justify-between items-center">
+          <div>
+            <span class="text-[10px] font-black uppercase tracking-wider text-emerald-500 block">@5K (Verseny Tempó)</span>
+            <span class="text-xs text-zinc-400">Intervallumokhoz, résztávokhoz</span>
+          </div>
+          <span class="text-xl font-mono font-black text-emerald-400">${formatSecs(pace5k)}<span class="text-xs text-zinc-500 ml-1">/km</span></span>
+        </div>
+        
+        <div class="bg-amber-950/30 border border-amber-900/50 p-4 rounded-xl flex justify-between items-center">
+          <div>
+            <span class="text-[10px] font-black uppercase tracking-wider text-amber-500 block">@T (Tempó Futás)</span>
+            <span class="text-xs text-zinc-400">Folyamatos 20-30 perces futáshoz</span>
+          </div>
+          <span class="text-xl font-mono font-black text-amber-400">${formatSecs(paceT)}<span class="text-xs text-zinc-500 ml-1">/km</span></span>
+        </div>
+
+        <div class="bg-sky-950/30 border border-sky-900/50 p-4 rounded-xl flex justify-between items-center">
+          <div>
+            <span class="text-[10px] font-black uppercase tracking-wider text-sky-500 block">@E (Könnyű Futás)</span>
+            <span class="text-xs text-zinc-400">Bemelegítés, levezetés, Zone 2</span>
+          </div>
+          <span class="text-xl font-mono font-black text-sky-400">${formatSecs(paceE)}<span class="text-xs text-zinc-500 ml-1">/km</span></span>
+        </div>
+      `;
+    }
+
+    // --- KÖZÖS MENTÉS ---
+    function saveAllData() {
+      localStorage.setItem('strng_personal_data', JSON.stringify(appData));
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+      const a = document.createElement('a');
+      a.href = dataStr;
+      a.download = `strng_naplo_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (imported.logs) {
+            appData = imported;
+            saveAllData();
+            window.location.reload();
+          }
+        } catch (err) { alert("Hibás fájl!"); }
+      };
+      reader.readAsText(file);
+    }
+
+    // Inicializálás
+    renderLogs();
+    if (appData.maxes.sq > 0) calculate531();
+    if (appData.run5k) calculatePaces();
+
   </script>
 </body>
 </html>
